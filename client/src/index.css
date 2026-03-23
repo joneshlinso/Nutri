@@ -1,0 +1,121 @@
+/* ─── Reset & Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #4ade80;
+  --primary-dark: #16a34a;
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-2: #334155;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --error: #f87171;
+  --radius: 12px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ─── Navbar ─────────────────────────────────────────────── */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--surface-2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+.navbar-brand { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+.navbar-links { display: flex; align-items: center; gap: 1.5rem; }
+.navbar-user { color: var(--text-muted); font-size: 0.9rem; }
+
+/* ─── Buttons ─────────────────────────────────────────────── */
+.btn-primary, .btn-outline, .btn-logout {
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-size: 0.9rem;
+}
+.btn-primary { background: var(--primary); color: #0f172a; }
+.btn-primary:hover { background: var(--primary-dark); color: #fff; }
+.btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+.btn-outline:hover { background: var(--primary); color: #0f172a; }
+.btn-logout { background: transparent; color: var(--error); border: 1.5px solid var(--error); }
+.btn-logout:hover { background: var(--error); color: #fff; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ─── Main Content ────────────────────────────────────────── */
+.main-content { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+
+/* ─── Home Page ───────────────────────────────────────────── */
+.home { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+.hero { text-align: center; max-width: 600px; }
+.hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--primary), #38bdf8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem; line-height: 1.7; }
+.hero-cta { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* ─── Auth Pages ──────────────────────────────────────────── */
+.auth-container { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-2);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow);
+}
+.auth-card h2 { font-size: 1.6rem; margin-bottom: 1.5rem; text-align: center; }
+.form-group { margin-bottom: 1.2rem; }
+.form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+.form-group input {
+  width: 100%; padding: 0.75rem 1rem;
+  background: var(--bg); border: 1.5px solid var(--surface-2);
+  border-radius: 8px; color: var(--text); font-size: 1rem;
+  transition: border-color 0.2s;
+}
+.form-group input:focus { outline: none; border-color: var(--primary); }
+.auth-card .btn-primary { width: 100%; padding: 0.8rem; font-size: 1rem; margin-top: 0.5rem; }
+.auth-footer { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: 1.2rem; }
+.error-msg { color: var(--error); background: rgba(248,113,113,0.1); border-radius: 8px;
+  padding: 0.6rem 1rem; font-size: 0.9rem; margin-bottom: 1rem; }
+
+/* ─── Dashboard ───────────────────────────────────────────── */
+.dashboard h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+.dashboard > p { color: var(--text-muted); margin-bottom: 2rem; }
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+.dashboard-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-2);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.dashboard-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.dashboard-card h3 { font-size: 1rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+.dashboard-card .stat { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+
+/* ─── Loading ─────────────────────────────────────────────── */
+.loading { display: flex; align-items: center; justify-content: center; height: 60vh;
+  font-size: 1.1rem; color: var(--text-muted); }
