@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, Plus, RefreshCw } from "lucide-react";
+import { Send, Sparkles, RefreshCw } from "lucide-react";
+import { motion } from "framer-motion";
 
 const QUICK_ACTIONS = [
   "📋 Generate today's diet",
@@ -18,11 +19,7 @@ const INIT_MESSAGES = [
   },
 ];
 
-const AI_RESPONSES = {
-  "Fix protein": "Great choice! To hit your 145g protein target today you still need ~57g more. Here are quick options:\n\n• **Grilled Chicken Breast** (100g) → 31g protein, 165 kcal\n• **Protein Shake** (1 scoop) → 25g protein, 120 kcal\n• **Greek Yogurt** (200g) → 34g protein, 120 kcal\n\nI recommend adding the chicken + Greek yogurt with dinner. Want me to add them to your log?",
-  "Generate dinner plan": "Based on your remaining macros (57g protein, 23g carbs, 17g fat), here's tonight's ideal dinner:\n\n🍗 **Grilled Chicken** (150g) — 46g protein\n🥦 **Steamed Broccoli** (200g) — 5g protein, 14g carbs\n🫒 **Olive Oil drizzle** (1 tbsp) — 14g fat\n\nTotal: ~470 kcal | 51g protein | 14g carbs | 18g fat\n\nThis fills your gaps perfectly! Want me to add this to your meal log?",
-  "Weekly summary": "Here's your week at a glance 📊:\n\n• **Avg calories:** 1,774 / 1,850 kcal (96% — excellent!)\n• **Best day:** Wednesday (1,650 kcal, all macros on target)\n• **Streak:** 5 days logged in a row 🔥\n• **Protein avg:** 96g/day (goal: 145g) — needs improvement\n• **Hydration:** 6.2 / 8 glasses avg\n\n**Top suggestion:** Increase protein at breakfast with eggs or yogurt. It'll improve satiety and energy!",
-};
+const FADE_UP = { hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } } };
 
 export default function AICoach() {
   const [messages, setMessages] = useState(INIT_MESSAGES);
@@ -41,10 +38,9 @@ export default function AICoach() {
     setInput(""); setTyping(true);
 
     setTimeout(() => {
-      const reply = AI_RESPONSES[text] || `Thanks for asking about "${text}". Let me analyse your nutrition data...\n\nBased on your current macros and goals, I'd recommend focusing on whole foods with balanced protein sources. Would you like a specific meal suggestion or a full day plan?`;
       const aiMsg = {
-        id: Date.now() + 1, from: "ai", text: reply, timestamp: new Date(),
-        suggestions: text === "Fix protein" ? ["Add to log", "Other options"] : ["Generate full plan", "Tell me more"],
+        id: Date.now() + 1, from: "ai", text: `I'm analyzing your data regarding "${text}"...\n\nBased on your profile, I'd suggest focusing on whole foods today. Let me know if you want a specific recipe!`, timestamp: new Date(),
+        suggestions: ["Give me a recipe", "Other options"],
       };
       setTyping(false);
       setMessages(m => [...m, aiMsg]);
@@ -59,87 +55,91 @@ export default function AICoach() {
   };
 
   return (
-    <main style={{ display:"flex", flexDirection:"column", height:"100vh", background:"var(--bg)" }}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-6" style={{ borderBottom:"1px solid var(--border)", background:"var(--surface)" }}>
-        <div className="flex items-center gap-3">
-          <div style={{ width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,var(--primary-light),var(--primary))",display:"flex",alignItems:"center",justifyContent:"center" }}>
-            <Sparkles size={22} style={{ color:"#fff" }} />
-          </div>
-          <div>
-            <h1 className="t-h3">AI Nutrition Coach</h1>
-            <div className="flex items-center gap-1">
-              <div style={{ width:7,height:7,borderRadius:"50%",background:"var(--success)" }} />
-              <span className="t-xs text-muted">Online • Analysing your data</span>
+    <motion.main className="page-content" style={{ display:"flex", flexDirection:"column", height:"100vh", padding: 0 }} initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
+      
+      {/* ─── Header ─── */}
+      <motion.div variants={FADE_UP} style={{ padding: "var(--sp-6) var(--sp-8)", borderBottom: "1px solid var(--border)", background: "rgba(9, 9, 11, 0.8)", backdropFilter: "blur(20px)", zIndex: 10 }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div style={{ width:44,height:44,borderRadius:14,background:"linear-gradient(135deg,#34D399,#047857)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"var(--shadow-glow)" }}>
+              <Sparkles size={22} style={{ color:"#fff" }} />
+            </div>
+            <div>
+              <h1 className="t-h3 text-text">Nutri<span className="text-primary">AI</span> Coach</h1>
+              <div className="flex items-center gap-2 mt-1">
+                <div style={{ width:6,height:6,borderRadius:"50%",background:"var(--success)",boxShadow:"0 0 8px var(--success)" }} />
+                <span className="t-xs text-muted" style={{ fontWeight:600, letterSpacing:"0.05em", textTransform:"uppercase" }}>Online</span>
+              </div>
             </div>
           </div>
+          <button className="btn-icon" onClick={() => setMessages(INIT_MESSAGES)} title="New Chat">
+            <RefreshCw size={18} />
+          </button>
         </div>
-        <button className="btn btn-ghost btn-sm flex items-center gap-2" onClick={() => setMessages(INIT_MESSAGES)}>
-          <RefreshCw size={14} /> New Chat
-        </button>
-      </div>
+      </motion.div>
 
-      {/* Quick Action chips */}
-      <div className="flex gap-2 p-4" style={{ flexWrap:"wrap", borderBottom:"1px solid var(--border)", background:"var(--surface)" }}>
+      {/* ─── Quick Actions ─── */}
+      <motion.div variants={FADE_UP} className="flex gap-2" style={{ padding: "var(--sp-4) var(--sp-8)", flexWrap: "wrap", borderBottom: "1px solid var(--border)" }}>
         {QUICK_ACTIONS.map(a => (
           <button key={a} className="chip" onClick={() => sendMessage(a.slice(2))}>{a}</button>
         ))}
-      </div>
+      </motion.div>
 
-      {/* Messages */}
-      <div style={{ flex:1, overflowY:"auto", padding:"var(--sp-6)", display:"flex", flexDirection:"column", gap:"var(--sp-4)" }}>
+      {/* ─── Messages Area ─── */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "var(--sp-8)", display: "flex", flexDirection: "column", gap: "var(--sp-6)" }}>
         {messages.map(msg => (
-          <div key={msg.id} style={{ display:"flex", flexDirection:"column", alignItems: msg.from === "user" ? "flex-end" : "flex-start", gap:8 }}>
+          <motion.div key={msg.id} initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} transition={{ type:"spring", damping:24 }}
+            style={{ display:"flex", flexDirection:"column", alignItems: msg.from === "user" ? "flex-end" : "flex-start", gap:8 }}>
+            
             {msg.from === "ai" && (
-              <div className="flex items-center gap-2">
-                <div style={{ width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,var(--primary-light),var(--primary))",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
-                  <Sparkles size={14} style={{ color:"#fff" }} />
+              <div className="flex items-center gap-2 mb-1">
+                <div style={{ width:24,height:24,borderRadius:8,background:"linear-gradient(135deg,#34D399,#047857)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
+                  <Sparkles size={12} style={{ color:"#fff" }} />
                 </div>
-                <span className="t-xs text-muted">NutriAI</span>
+                <span className="t-xs text-muted" style={{ fontWeight:600, letterSpacing:"0.05em", textTransform:"uppercase" }}>NutriAI</span>
               </div>
             )}
-            <div className={`chat-bubble ${msg.from}`} style={{ maxWidth:"78%" }}>
+            
+            <div className={`chat-bubble ${msg.from}`} style={{ maxWidth:"75%", boxShadow: msg.from === "user" ? "var(--shadow-neon)" : "var(--shadow-md)" }}>
               {msg.from === "ai" ? formatText(msg.text) : msg.text}
             </div>
+
             {msg.suggestions && (
-              <div className="flex gap-2" style={{ flexWrap:"wrap" }}>
+              <div className="flex gap-2 mt-2" style={{ flexWrap:"wrap" }}>
                 {msg.suggestions.map(s => (
-                  <button key={s} className="btn btn-secondary btn-sm" onClick={() => sendMessage(s)}>{s}</button>
+                  <button key={s} className="btn btn-secondary btn-sm" onClick={() => sendMessage(s)} style={{ borderRadius: "var(--r-sm)" }}>
+                    {s}
+                  </button>
                 ))}
               </div>
             )}
-          </div>
+          </motion.div>
         ))}
 
-        {/* Typing indicator */}
         {typing && (
-          <div className="flex items-center gap-2 fade-up">
-            <div style={{ width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,var(--primary-light),var(--primary))",display:"flex",alignItems:"center",justifyContent:"center" }}>
-              <Sparkles size={14} style={{ color:"#fff" }} />
+          <motion.div initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} className="flex items-center gap-2">
+            <div style={{ width:24,height:24,borderRadius:8,background:"linear-gradient(135deg,#34D399,#047857)",display:"flex",alignItems:"center",justifyContent:"center" }}>
+              <Sparkles size={12} style={{ color:"#fff" }} />
             </div>
             <div className="chat-bubble ai" style={{ padding:"12px 16px" }}>
               <span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" />
             </div>
-          </div>
+          </motion.div>
         )}
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div style={{ padding:"var(--sp-4) var(--sp-6)", borderTop:"1px solid var(--border)", background:"var(--surface)" }}>
-        <form className="flex items-center gap-3"
-          onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}>
-          <input
-            className="input" style={{ flex:1 }}
-            placeholder="Ask me anything about your nutrition…"
-            value={input} onChange={e => setInput(e.target.value)}
-          />
-          <button type="submit" className="btn btn-primary" disabled={!input.trim() || typing}
-            style={{ padding:"11px 18px", borderRadius:"var(--r-md)" }}>
-            <Send size={16} />
+      {/* ─── Input ─── */}
+      <motion.div variants={FADE_UP} style={{ padding: "var(--sp-6) var(--sp-8)", borderTop: "1px solid var(--border)", background: "rgba(9, 9, 11, 0.8)", backdropFilter: "blur(20px)" }}>
+        <form className="flex items-center gap-3" onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}>
+          <div className="search-bar" style={{ flex: 1, height: 56, borderRadius: "var(--r-md)", padding: "0 var(--sp-4)" }}>
+            <input placeholder="Ask me anything about your nutrition…" value={input} onChange={e => setInput(e.target.value)} style={{ fontSize: "1rem" }} />
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={!input.trim() || typing} style={{ width: 56, height: 56, padding: 0, borderRadius: "var(--r-md)" }}>
+            <Send size={20} />
           </button>
         </form>
-      </div>
-    </main>
+      </motion.div>
+    </motion.main>
   );
 }

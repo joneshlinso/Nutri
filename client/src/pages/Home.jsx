@@ -1,216 +1,173 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Flame, Droplets, Zap, TrendingUp, Plus,
-  ChevronRight, Sunrise, Sun, Moon, Coffee, Sparkles
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { motion } from "framer-motion";
 import MacroRing from "../components/MacroRing";
 import MacroBar from "../components/MacroBar";
+import { Flame, Droplet, Sparkles, ChevronRight, Apple, Play, Plus } from "lucide-react";
 
-// ─── Mock data (will come from API later) ─────────────────────
-const TODAY = {
-  calories: { consumed: 1420, goal: 1850 },
-  protein:  { consumed: 88,   goal: 145 },
-  carbs:    { consumed: 162,  goal: 185 },
-  fat:      { consumed: 41,   goal: 58  },
-  water:    { consumed: 5,    goal: 8   },
+// Mock Data
+const DAILY_GOAL = 1850;
+const CONSUMED = 1420;
+const MACROS = {
+  protein: { current: 88, goal: 145, color: "var(--protein)" },
+  carbs:   { current: 162, goal: 185, color: "var(--carbs)" },
+  fat:     { current: 45, goal: 58,  color: "var(--fat)" }
 };
 
-const MEALS = [
-  { id:1, type:"Breakfast", icon: Sunrise, color:"#F5A623",
-    items:["Hard-Boiled Egg","Oatmeal w/ Berries"], calories:480, time:"8:00 AM" },
-  { id:2, type:"Lunch",     icon: Sun,     color:"#4A90D9",
-    items:["Grilled Chicken Bowl","Mixed Greens"], calories:620, time:"12:30 PM" },
-  { id:3, type:"Snack",     icon: Coffee,  color:"#8FAF8F",
-    items:["Greek Yogurt"],                        calories:120, time:"3:00 PM" },
-  { id:4, type:"Dinner",    icon: Moon,    color:"#3A7D44",
-    items:["Not logged yet"],                      calories:0,   time:"7:00 PM", empty:true },
-];
+const FADE_UP = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+};
 
-const AI_INSIGHT = {
-  message: "You're 57g short on protein today. Consider adding a chicken breast or a protein shake with dinner.",
-  suggestions: ["+ Add Chicken Breast", "+ Add Protein Shake", "Generate Dinner Plan"],
+const STAGGER = {
+  visible: { transition: { staggerChildren: 0.08 } }
 };
 
 export default function Home() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [waterCount, setWaterCount] = useState(TODAY.water.consumed);
-  const calorieProgress = TODAY.calories.consumed / TODAY.calories.goal;
-  const remaining = TODAY.calories.goal - TODAY.calories.consumed;
+  const [greeting, setGreeting] = useState("Good evening");
+  const [water, setWater] = useState(5);
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 17) setGreeting("Good afternoon");
+  }, []);
 
   return (
-    <main className="page-content" style={{ background: "var(--bg)", minHeight: "100vh" }}>
+    <motion.main className="page-content" initial="hidden" animate="visible" variants={STAGGER}>
+      
       {/* ─── Header ─── */}
-      <div className="flex items-center justify-between mb-6">
+      <motion.header variants={FADE_UP} className="flex justify-between items-center mb-8">
         <div>
-          <p className="t-sm text-muted">{greeting} 👋</p>
-          <h1 className="t-h1">{user?.name?.split(" ")[0] || "Alex"}</h1>
+          <h1 className="t-h1">
+            {greeting}, <span className="grad-text">{user?.name?.split(" ")[0] || "User"}</span>
+          </h1>
+          <p className="t-body mt-1">Here’s your nutrition overview for today.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div style={{ textAlign:"right" }}>
-            <div className="t-xs text-muted">{new Date().toLocaleDateString("en-US",{weekday:"long"})}</div>
-            <div className="t-sm-med">{new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"})}</div>
-          </div>
-          <div className="avatar" style={{ width:44,height:44,fontSize:16 }}>
-            {user?.name ? user.name.split(" ").map(n=>n[0]).join("").toUpperCase().slice(0,2) : "U"}
-          </div>
+        <div className="flex gap-3">
+          <span className="badge badge-orange"><Flame size={12} /> 5 Day Streak</span>
+          <Link to="/log" className="btn btn-primary btn-sm rounded-pill">
+            <Plus size={16} /> Log Meal
+          </Link>
         </div>
-      </div>
+      </motion.header>
 
-      {/* ─── Daily Summary Card ─── */}
-      <div className="card-dark fade-up" style={{ padding:"var(--sp-6)", marginBottom:"var(--sp-4)", display:"grid", gridTemplateColumns:"1fr auto", gap:"var(--sp-6)", alignItems:"center" }}>
-        <div>
-          <p style={{ color:"rgba(255,255,255,0.65)", fontSize:".875rem", marginBottom:4 }}>Daily Calories</p>
-          <div className="flex items-center gap-3">
-            <span style={{ fontSize:"2.75rem", fontWeight:800, color:"#fff", letterSpacing:"-0.03em" }}>
-              {TODAY.calories.consumed.toLocaleString()}
-            </span>
-            <span style={{ color:"rgba(255,255,255,0.55)", fontSize:"1rem" }}>/ {TODAY.calories.goal.toLocaleString()} kcal</span>
-          </div>
-          {/* Progress bar */}
-          <div style={{ background:"rgba(255,255,255,0.2)", borderRadius:"var(--r-pill)", height:8, marginTop:12, overflow:"hidden" }}>
-            <div style={{
-              height:"100%", borderRadius:"var(--r-pill)",
-              background:"rgba(255,255,255,0.85)",
-              width:`${Math.min(calorieProgress*100,100)}%`,
-              transition:"width .9s var(--ease)"
-            }} />
-          </div>
-          <p style={{ color:"rgba(255,255,255,0.65)", fontSize:".8125rem", marginTop:8 }}>
-            {remaining > 0 ? `${remaining} kcal remaining` : `${Math.abs(remaining)} kcal over goal`}
-          </p>
-        </div>
-        {/* Flame icon */}
-        <div style={{ textAlign:"center" }}>
-          <Flame size={56} style={{ color:"rgba(255,255,255,0.3)" }} />
-          <div style={{ color:"rgba(255,255,255,0.7)", fontSize:".75rem", marginTop:4 }}>🔥 5 day streak</div>
-        </div>
-      </div>
-
-      {/* ─── Macro Rings ─── */}
-      <div className="card fade-up p-6 mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="t-h3">Macros Today</h2>
-          <span className="badge badge-green">On Track</span>
-        </div>
-        <div className="flex" style={{ gap:"var(--sp-6)", justifyContent:"space-around", flexWrap:"wrap" }}>
-          <MacroRing label="Protein" current={TODAY.protein.consumed} goal={TODAY.protein.goal} color="var(--protein)" unit="g" />
-          <MacroRing label="Carbs"   current={TODAY.carbs.consumed}   goal={TODAY.carbs.goal}   color="var(--carbs)"   unit="g" />
-          <MacroRing label="Fat"     current={TODAY.fat.consumed}      goal={TODAY.fat.goal}      color="var(--fat)"     unit="g" />
-        </div>
-        <div className="flex-col gap-3 mt-4" style={{ display:"flex" }}>
-          <MacroBar label="Protein" current={TODAY.protein.consumed} goal={TODAY.protein.goal} color="var(--protein)" />
-          <MacroBar label="Carbs"   current={TODAY.carbs.consumed}   goal={TODAY.carbs.goal}   color="var(--carbs)" />
-          <MacroBar label="Fat"     current={TODAY.fat.consumed}      goal={TODAY.fat.goal}      color="var(--fat)" />
-        </div>
-      </div>
-
-      <div className="grid-2 mb-4" style={{ gap:"var(--sp-4)" }}>
-        {/* ─── Water Tracker ─── */}
-        <div className="card p-6 fade-up">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Droplets size={20} style={{ color:"var(--info)" }} />
-              <h2 className="t-h3">Water</h2>
+      <div className="bento-grid">
+        
+        {/* ─── Bento: Calorie Summary (Large Dark Card) ─── */}
+        <motion.div variants={FADE_UP} className="card-dark p-8" style={{ gridColumn: "span 8", display: "flex", alignItems: "center", gap: "var(--sp-8)" }}>
+          <div style={{ flex: 1 }}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="t-xs text-muted" style={{ fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>Daily Calories</span>
             </div>
-            <span className="t-sm-med" style={{ color:"var(--info)" }}>{waterCount}/{TODAY.water.goal} glasses</span>
+            <div className="flex items-baseline gap-2 mb-6">
+              <span className="t-stat text-primary">{DAILY_GOAL - CONSUMED}</span>
+              <span className="t-sm-med text-muted">kcal remaining</span>
+            </div>
+            
+            {/* Smooth glowing progress bar */}
+            <div className="macro-bar-track mb-3" style={{ height: 10, background: "rgba(255,255,255,0.05)" }}>
+              <div className="macro-bar-fill grad-primary" style={{ width: `${(CONSUMED/DAILY_GOAL)*100}%` }} />
+            </div>
+            
+            <div className="flex justify-between t-sm text-muted" style={{ fontWeight: 500 }}>
+              <span>{CONSUMED} eaten</span>
+              <span>{DAILY_GOAL} goal</span>
+            </div>
           </div>
-          <div className="water-drops">
-            {Array.from({ length: TODAY.water.goal }).map((_, i) => (
-              <span
-                key={i}
-                className={`water-drop ${i < waterCount ? "filled" : ""}`}
-                onClick={() => setWaterCount(i < waterCount ? i : i + 1)}
-              >💧</span>
-            ))}
+          
+          <div style={{ width: 140, height: 140, flexShrink: 0, position:"relative" }}>
+             <MacroRing strokeWidth={12} progress={(CONSUMED/DAILY_GOAL)} color="var(--primary)" size={140} glow />
+             <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+               <Flame size={28} className="text-primary mb-1" style={{ filter: "drop-shadow(0 0 8px rgba(16,185,129,0.5))" }} />
+             </div>
           </div>
-          <div style={{ background:"var(--surface-2)", borderRadius:"var(--r-pill)", height:6, marginTop:12 }}>
-            <div style={{ height:"100%", borderRadius:"var(--r-pill)", background:"var(--info)", width:`${(waterCount/TODAY.water.goal)*100}%`, transition:"width .5s" }} />
-          </div>
-        </div>
+        </motion.div>
 
-        {/* ─── Quick Stats ─── */}
-        <div className="card p-6 fade-up">
-          <h2 className="t-h3 mb-4">Quick Stats</h2>
-          <div className="flex-col gap-3" style={{ display:"flex" }}>
-            {[
-              { icon: Flame,     label:"Calories Burned",  value:"320 kcal",  color:"var(--error)" },
-              { icon: TrendingUp,label:"Net Calories",      value:`${TODAY.calories.consumed - 320} kcal`, color:"var(--primary)" },
-              { icon: Zap,       label:"Days Streak",       value:"5 days",    color:"var(--warning)" },
-            ].map(({ icon:Icon, label, value, color }) => (
-              <div key={label} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Icon size={16} style={{ color }} />
-                  <span className="t-sm text-muted">{label}</span>
-                </div>
-                <span className="t-sm-med" style={{ color }}>{value}</span>
+        {/* ─── Bento: AI Coach Insight ─── */}
+        <motion.div variants={FADE_UP} className="card p-6" style={{ gridColumn: "span 4", background: "linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)", borderColor: "rgba(16, 185, 129, 0.2)" }}>
+          <div className="flex items-center gap-2 mb-4">
+            <div style={{ padding: 6, borderRadius: 8, background: "var(--primary-glow)", color: "var(--primary)" }}>
+              <Sparkles size={16} />
+            </div>
+            <span className="t-xs" style={{ color: "var(--primary)", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase" }}>AI Insight</span>
+          </div>
+          <p className="t-sm" style={{ color: "var(--text)", lineHeight: 1.6, marginBottom: "var(--sp-6)" }}>
+            You're <strong>57g short</strong> on protein today. I suggest adding a piece of grilled chicken or a protein shake to your dinner to hit your goal.
+          </p>
+          <Link to="/ai" className="btn btn-secondary btn-sm btn-w-full" style={{ justifyContent: "center" }}>
+            Fix Protein Gap <ChevronRight size={14} />
+          </Link>
+        </motion.div>
+
+        {/* ─── Bento: Macro Distribution ─── */}
+        <motion.div variants={FADE_UP} className="card p-6" style={{ gridColumn: "span 6" }}>
+          <h3 className="t-h3 mb-6">Macro Distribution</h3>
+          <div className="flex-col gap-6">
+            <MacroBar label="Protein" current={MACROS.protein.current} goal={MACROS.protein.goal} color={MACROS.protein.color} unit="g" />
+            <MacroBar label="Carbs"   current={MACROS.carbs.current}   goal={MACROS.carbs.goal}   color={MACROS.carbs.color}   unit="g" />
+            <MacroBar label="Fat"     current={MACROS.fat.current}     goal={MACROS.fat.goal}     color={MACROS.fat.color}     unit="g" />
+          </div>
+        </motion.div>
+
+        {/* ─── Bento: Water & Timeline ─── */}
+        <motion.div variants={FADE_UP} style={{ gridColumn: "span 6", display: "grid", gridTemplateRows: "auto 1fr", gap: "var(--sp-6)" }}>
+          
+          {/* Water Tracker */}
+          <div className="card p-6 flex justify-between items-center" style={{ background: "rgba(59, 130, 246, 0.05)", borderColor: "rgba(59, 130, 246, 0.15)" }}>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Droplet size={16} className="text-protein" />
+                <span className="t-h3">Hydration</span>
               </div>
-            ))}
+              <p className="t-sm text-muted">{water} of 8 glasses logged</p>
+            </div>
+            <div className="flex gap-1" style={{ flexWrap: "wrap", width: 140, justifyContent: "flex-end" }}>
+              {[...Array(8)].map((_, i) => (
+                <button key={i} onClick={() => setWater(i+1)}
+                  style={{
+                    width: 28, height: 32, borderRadius: 8, border: "none", cursor: "pointer",
+                    background: i < water ? "var(--protein)" : "rgba(255,255,255,0.05)",
+                    boxShadow: i < water ? "0 0 12px rgba(59, 130, 246, 0.4)" : "none",
+                    transition: "all .3s var(--ease)",
+                    transform: i < water ? "scale(1.05)" : "scale(1)"
+                  }}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* ─── AI Insight Card ─── */}
-      <div className="card-gradient fade-up p-6 mb-4" style={{ borderLeft:"4px solid var(--primary)" }}>
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles size={18} style={{ color:"var(--primary)" }} />
-          <span className="t-sm-med text-primary">AI Coach Insight</span>
-        </div>
-        <p className="t-body" style={{ color:"var(--text-secondary)", marginBottom:16 }}>
-          {AI_INSIGHT.message}
-        </p>
-        <div className="flex" style={{ gap:8, flexWrap:"wrap" }}>
-          {AI_INSIGHT.suggestions.map(s => (
-            <button key={s} className="btn btn-secondary btn-sm" onClick={() => navigate(s.includes("Plan") ? "/ai" : "/log")}>
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ─── Meal Timeline ─── */}
-      <div className="fade-up">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="t-h2">Today's Meals</h2>
-          <button className="btn btn-ghost btn-sm" onClick={() => navigate("/log")}>
-            <Plus size={14} /> Add Meal
-          </button>
-        </div>
-        <div className="meal-timeline">
-          {MEALS.map(meal => {
-            const Icon = meal.icon;
-            return (
-              <div key={meal.id} className="meal-item" style={{ opacity: meal.empty ? 0.6 : 1 }}>
-                <div style={{ width:40,height:40,borderRadius:"var(--r-sm)",background:`${meal.color}18`,display:"flex",alignItems:"center",justifyContent:"center" }}>
-                  <Icon size={20} style={{ color:meal.color }} />
-                </div>
-                <div style={{ flex:1 }}>
-                  <div className="flex items-center justify-between">
-                    <span className="t-sm-med">{meal.type}</span>
-                    <span className="t-xs text-muted">{meal.time}</span>
+          {/* Mini Timeline */}
+          <div className="card p-6">
+            <h3 className="t-h3 mb-4">Today's Meals</h3>
+            <div className="flex-col gap-4">
+              {[
+                { time: "08:30", type: "Breakfast", cal: 420, icon: <Apple size={16} /> },
+                { time: "13:15", type: "Lunch",     cal: 650, icon: <Play size={16} style={{transform:"rotate(-90deg)"}} /> }, // placeholder icon
+              ].map((m, i) => (
+                <div key={i} className="flex items-center gap-4 group">
+                  <div className="t-xs text-muted" style={{ width: 40 }}>{m.time}</div>
+                  <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+                    {m.icon}
                   </div>
-                  <p className="t-xs text-muted">{meal.items.join(" • ")}</p>
+                  <div style={{ flex: 1 }}>
+                    <div className="t-sm-med">{m.type}</div>
+                    <div className="t-xs text-muted">{m.cal} kcal</div>
+                  </div>
+                  <ChevronRight size={16} className="text-muted" style={{ opacity: 0, transform: "translateX(-10px)", transition: "all .2s" }} />
                 </div>
-                <div className="flex items-center gap-2">
-                  {meal.calories > 0 && (
-                    <span className="badge badge-green">{meal.calories} kcal</span>
-                  )}
-                  {meal.empty ? (
-                    <button className="btn btn-secondary btn-sm" onClick={() => navigate("/log")}>Add</button>
-                  ) : (
-                    <ChevronRight size={16} style={{ color:"var(--text-muted)" }} />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              ))}
+              
+              <Link to="/log" className="btn btn-ghost btn-sm mt-2" style={{ alignSelf: "flex-start", paddingLeft: 0 }}>
+                + Add Dinner
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+
       </div>
-    </main>
+    </motion.main>
   );
 }
