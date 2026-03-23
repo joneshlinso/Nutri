@@ -1,13 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { User, Target, Utensils, Bell, ChevronRight, Save, LogOut } from "lucide-react";
-import { motion } from "framer-motion";
-import TiltCard from "../components/TiltCard";
+import { User, Target, Utensils, Bell, LogOut } from "lucide-react";
 
-const GOALS = ["Decrease Mass","Increase Muscle","Maintain Density","Optimize Health"];
-
-const STAGGER = { visible: { transition: { staggerChildren: 0.1 } } };
-const FADE_UP = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 20 } } };
+const GOALS = ["Lose Weight","Gain Muscle","Maintain Weight","Improve Health"];
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -16,7 +11,7 @@ export default function Profile() {
   const [form, setForm] = useState({
     name:     user?.name    || "Alex Chen",
     email:    user?.email   || "alex@example.com",
-    goal:     "Decrease Mass",
+    goal:     "Lose Weight",
     calories: "1850",
     protein:  "145", carbs: "185", fat: "58",
   });
@@ -26,109 +21,109 @@ export default function Profile() {
   const initials = form.name.split(" ").map(n=>n[0]).join("").toUpperCase().slice(0,2) || "U";
 
   const SECTIONS = [
-    { id:"profile",  icon:User,     label:"Core Identity"   },
-    { id:"goals",    icon:Target,   label:"Targets & Limits" },
-    { id:"diet",     icon:Utensils, label:"Fuel Preferences"  },
-    { id:"notifs",   icon:Bell,     label:"System Alerts"  },
+    { id:"profile",  icon:User,     label:"Profile Details"   },
+    { id:"goals",    icon:Target,   label:"Goals & Limits" },
+    { id:"diet",     icon:Utensils, label:"Dietary Preferences"  },
+    { id:"notifs",   icon:Bell,     label:"Notifications"  },
   ];
 
   return (
-    <motion.main initial="hidden" animate="visible" variants={STAGGER}>
-      <motion.header variants={FADE_UP} className="mb-10 pt-4">
-         <h1 className="t-display tracking-tighter text-text">System <span className="grad-text">Preferences</span></h1>
-      </motion.header>
+    <main className="page-content fade-in">
+      <header className="mb-12">
+         <h1 className="t-h1 mb-1">Settings</h1>
+         <p className="t-body">Manage your account and preferences</p>
+      </header>
 
       <div className="bento-grid" style={{ alignItems: "start" }}>
         
         {/* ─── Left Sidebar Nav ─── */}
-        <motion.div variants={FADE_UP} style={{ gridColumn: "span 4" }} className="flex-col gap-6">
-          <TiltCard className="p-8 text-center" style={{ background: "rgba(0,0,0,0.4)" }}>
-            <div style={{ width:96,height:96,fontSize:32,margin:"0 auto var(--sp-6)",background:"var(--text)",color:"#000",display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"var(--r-lg)",boxShadow:"0 12px 40px rgba(255,255,255,0.15)" }}>
+        <div style={{ gridColumn: "span 4" }} className="flex-col gap-6">
+          <div className="card p-8 text-center bg-bg">
+            <div style={{ width:80,height:80,fontSize:24,margin:"0 auto var(--sp-6)",background:"var(--surface)",color:"var(--text)",display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"var(--r-md)", border:"1px solid var(--border)" }}>
               {initials}
             </div>
-            <h2 className="t-h2 text-text">{form.name}</h2>
-            <p className="t-sm text-secondary mb-6">{form.email}</p>
+            <h2 className="t-h3 text-text">{form.name}</h2>
+            <p className="t-sm mb-4">{form.email}</p>
             <div className="flex gap-2 justify-center">
-              <span className="badge badge-green">🎯 {form.goal}</span>
+              <span className="badge">🎯 {form.goal}</span>
             </div>
-          </TiltCard>
+          </div>
 
-          <TiltCard className="p-2" style={{ background: "rgba(0,0,0,0.4)" }}>
+          <div className="card p-2 bg-bg">
             {SECTIONS.map(({ id, icon:Icon, label }) => (
               <button key={id} onClick={() => setSection(id)}
                 style={{
-                  width:"100%", display:"flex", alignItems:"center", gap:16, padding:"16px 20px",
-                  background: section===id ? "var(--glass-2)" : "transparent",
-                  borderRadius: "var(--r-md)", border:"none",
+                  width:"100%", display:"flex", alignItems:"center", gap:12, padding:"12px 16px",
+                  background: section===id ? "var(--surface)" : "transparent",
+                  borderRadius: "var(--r-sm)", border:"none", cursor: "pointer",
                   color: section===id ? "var(--text)" : "var(--text-secondary)",
-                  transition:"all .3s var(--ease-expo)"
+                  transition:"var(--transit)"
                 }}>
-                <Icon size={20} style={{ color: section===id ? "var(--primary)" : "inherit" }} />
-                <span className="t-body-med">{label}</span>
-                {section===id && <ChevronRight size={18} style={{ marginLeft:"auto", color:"var(--primary)" }} />}
+                <Icon size={16} />
+                <span className="t-sm-med">{label}</span>
               </button>
             ))}
-          </TiltCard>
+          </div>
 
-          <button onClick={logout} className="btn btn-ghost" style={{ width: "100%", padding: "20px", display: "flex", alignItems: "center", justifyCenter: "center", gap: 12, color: "var(--fat)", background: "rgba(255, 23, 68, 0.05)", border: "1px solid rgba(255, 23, 68, 0.2)", borderRadius: "var(--r-lg)" }}>
-            <LogOut size={20} /> Terminate Session
+          <button onClick={logout} className="btn btn-ghost w-full" style={{ padding: "16px", color: "var(--fat)", border: "1px solid var(--border)" }}>
+            <LogOut size={16} /> Sign Out
           </button>
-        </motion.div>
+        </div>
 
         {/* ─── Right Content ─── */}
-        <motion.div variants={FADE_UP} style={{ gridColumn: "span 8" }}>
-          <TiltCard className="p-10 min-h-[600px]" style={{ background: "rgba(0,0,0,0.6)" }}>
+        <div style={{ gridColumn: "span 8" }}>
+          <div className="card p-10 min-h-[500px]" style={{ background: "var(--bg)" }}>
             
             {section === "profile" && (
-              <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{type:"spring", damping:24}}>
-                <h2 className="t-h2 mb-8 text-text">Identity Parameters</h2>
+              <div>
+                <h2 className="t-h2 mb-8 text-text">Profile Details</h2>
                 <div className="grid-2 mb-8">
                   <div className="input-wrap">
-                    <label className="input-label">Identity Designation</label>
+                    <label className="input-label">Full Name</label>
                     <input className="input" value={form.name} onChange={set("name")} />
                   </div>
                   <div className="input-wrap">
-                    <label className="input-label">Transmit Address</label>
+                    <label className="input-label">Email Address</label>
                     <input className="input" type="email" value={form.email} onChange={set("email")} />
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {section === "goals" && (
-              <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{type:"spring", damping:24}}>
-                <h2 className="t-h2 mb-8 text-text">Targets & Limits</h2>
+              <div>
+                <h2 className="t-h2 mb-8 text-text">Goals & Limits</h2>
                 <div className="input-wrap mb-8">
-                  <label className="input-label mb-3">Primary Objective</label>
+                  <label className="input-label mb-3">Primary Goal</label>
                   <div className="flex gap-3" style={{ flexWrap:"wrap" }}>
                     {GOALS.map(g => (
-                      <button key={g} className={`chip ${form.goal===g?"active":""}`} style={{ padding: "12px 24px" }} onClick={() => setForm(f => ({...f,goal:g}))}>{g}</button>
+                      <button key={g} className={`chip ${form.goal===g?"active":""}`} onClick={() => setForm(f => ({...f,goal:g}))}>{g}</button>
                     ))}
                   </div>
                 </div>
-                <div className="grid-2" style={{ gap:"var(--sp-8)" }}>
+                <div className="grid-2" style={{ gap:"var(--sp-6)" }}>
                   <div className="input-wrap">
-                    <label className="input-label">Caloric Limit</label>
-                    <input className="input t-h3" type="number" value={form.calories} onChange={set("calories")} style={{ fontFamily: "monospace" }} />
+                    <label className="input-label">Daily Calories</label>
+                    <input className="input t-h3" type="number" value={form.calories} onChange={set("calories")} />
                   </div>
                   <div className="input-wrap">
-                    <label className="input-label" style={{ color: "var(--protein)" }}>Protein Target (g)</label>
-                    <input className="input t-h3" type="number" value={form.protein} onChange={set("protein")} style={{ fontFamily: "monospace", color: "var(--protein)", borderColor: "rgba(41,121,255,0.3)" }} />
+                    <label className="input-label">Protein Target (g)</label>
+                    <input className="input t-h3" type="number" value={form.protein} onChange={set("protein")} />
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
 
-            {/* Sticky Save Button */}
-            <div style={{ marginTop: 80, paddingTop: 40, borderTop: "1px solid var(--glass-border)" }}>
-              <button className="btn btn-primary btn-lg" onClick={handleSave} style={{ minWidth: 200, padding: "20px" }}>
-                {saved ? "✓ Configuration Synced" : <><Save size={18}/> Commit Changes</>}
+            {/* Save Button */}
+            <div style={{ marginTop: 60, paddingTop: 32, borderTop: "1px solid var(--border)" }}>
+              <button className="btn btn-primary btn-lg" onClick={handleSave} style={{ minWidth: 160 }}>
+                {saved ? "Saved" : "Save Changes"}
               </button>
             </div>
 
-          </TiltCard>
-        </motion.div>
+          </div>
+        </div>
       </div>
-    </motion.main>
+    </main>
   );
 }
