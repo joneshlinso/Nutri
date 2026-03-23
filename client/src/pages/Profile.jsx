@@ -1,24 +1,22 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { User, Target, Utensils, Bell, Moon, Sun, ChevronRight, Save, LogOut } from "lucide-react";
+import { User, Target, Utensils, Bell, ChevronRight, Save, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
+import TiltCard from "../components/TiltCard";
 
-const GOALS = ["Lose Weight","Gain Muscle","Maintain Weight","Eat Healthier"];
-const DIETS = ["No Preference","Vegetarian","Vegan","Keto","Paleo","Gluten-Free"];
-const ACTIVITY = ["Sedentary","Lightly Active","Moderately Active","Very Active"];
+const GOALS = ["Decrease Mass","Increase Muscle","Maintain Density","Optimize Health"];
 
-const STAGGER = { visible: { transition: { staggerChildren: 0.05 } } };
-const FADE_UP = { hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } } };
+const STAGGER = { visible: { transition: { staggerChildren: 0.1 } } };
+const FADE_UP = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 20 } } };
 
 export default function Profile() {
   const { user, logout } = useAuth();
   const [section, setSection] = useState("profile");
   const [saved, setSaved] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
   const [form, setForm] = useState({
     name:     user?.name    || "Alex Chen",
     email:    user?.email   || "alex@example.com",
-    goal:     "Lose Weight",
+    goal:     "Decrease Mass",
     calories: "1850",
     protein:  "145", carbs: "185", fat: "58",
   });
@@ -28,68 +26,69 @@ export default function Profile() {
   const initials = form.name.split(" ").map(n=>n[0]).join("").toUpperCase().slice(0,2) || "U";
 
   const SECTIONS = [
-    { id:"profile",  icon:User,     label:"Profile Info"   },
-    { id:"goals",    icon:Target,   label:"Goals & Macros" },
-    { id:"diet",     icon:Utensils, label:"Dietary Prefs"  },
-    { id:"notifs",   icon:Bell,     label:"Notifications"  },
+    { id:"profile",  icon:User,     label:"Core Identity"   },
+    { id:"goals",    icon:Target,   label:"Targets & Limits" },
+    { id:"diet",     icon:Utensils, label:"Fuel Preferences"  },
+    { id:"notifs",   icon:Bell,     label:"System Alerts"  },
   ];
 
   return (
-    <motion.main className="page-content" initial="hidden" animate="visible" variants={STAGGER}>
-      <motion.h1 variants={FADE_UP} className="t-h1 mb-8">Settings</motion.h1>
+    <motion.main initial="hidden" animate="visible" variants={STAGGER}>
+      <motion.header variants={FADE_UP} className="mb-10 pt-4">
+         <h1 className="t-display tracking-tighter text-text">System <span className="grad-text">Preferences</span></h1>
+      </motion.header>
 
       <div className="bento-grid" style={{ alignItems: "start" }}>
         
-        {/* ─── Left Sidebar ─── */}
+        {/* ─── Left Sidebar Nav ─── */}
         <motion.div variants={FADE_UP} style={{ gridColumn: "span 4" }} className="flex-col gap-6">
-          <div className="card p-6 text-center">
-            <div style={{ width:80,height:80,fontSize:28,margin:"0 auto var(--sp-4)",background:"linear-gradient(135deg,#34D399,#047857)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"var(--r-md)",boxShadow:"var(--shadow-glow)" }}>
+          <TiltCard className="p-8 text-center" style={{ background: "rgba(0,0,0,0.4)" }}>
+            <div style={{ width:96,height:96,fontSize:32,margin:"0 auto var(--sp-6)",background:"var(--text)",color:"#000",display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"var(--r-lg)",boxShadow:"0 12px 40px rgba(255,255,255,0.15)" }}>
               {initials}
             </div>
-            <h2 className="t-h3">{form.name}</h2>
-            <p className="t-sm text-muted mb-4">{form.email}</p>
+            <h2 className="t-h2 text-text">{form.name}</h2>
+            <p className="t-sm text-secondary mb-6">{form.email}</p>
             <div className="flex gap-2 justify-center">
               <span className="badge badge-green">🎯 {form.goal}</span>
             </div>
-          </div>
+          </TiltCard>
 
-          <div className="card" style={{ padding: "8px" }}>
+          <TiltCard className="p-2" style={{ background: "rgba(0,0,0,0.4)" }}>
             {SECTIONS.map(({ id, icon:Icon, label }) => (
               <button key={id} onClick={() => setSection(id)}
                 style={{
-                  width:"100%", display:"flex", alignItems:"center", gap:12, padding:"12px 16px",
-                  background: section===id ? "var(--surface-active)" : "none",
-                  borderRadius: "var(--r-sm)", border:"none", cursor:"pointer",
+                  width:"100%", display:"flex", alignItems:"center", gap:16, padding:"16px 20px",
+                  background: section===id ? "var(--glass-2)" : "transparent",
+                  borderRadius: "var(--r-md)", border:"none",
                   color: section===id ? "var(--text)" : "var(--text-secondary)",
-                  fontWeight: section===id ? 600 : 500, fontSize:".9375rem",
-                  transition:"all .2s"
+                  transition:"all .3s var(--ease-expo)"
                 }}>
-                <Icon size={18} style={{ color: section===id ? "var(--primary)" : "inherit" }} />
-                {label}
-                {section===id && <ChevronRight size={16} style={{ marginLeft:"auto", opacity:.5 }} />}
+                <Icon size={20} style={{ color: section===id ? "var(--primary)" : "inherit" }} />
+                <span className="t-body-med">{label}</span>
+                {section===id && <ChevronRight size={18} style={{ marginLeft:"auto", color:"var(--primary)" }} />}
               </button>
             ))}
-          </div>
+          </TiltCard>
 
-          <button onClick={logout} className="card btn-ghost" style={{ width: "100%", padding: "16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, color: "var(--error)", border: "1px solid rgba(239, 68, 68, 0.2)" }}>
-            <LogOut size={18} /> Sign Out
+          <button onClick={logout} className="btn btn-ghost" style={{ width: "100%", padding: "20px", display: "flex", alignItems: "center", justifyCenter: "center", gap: 12, color: "var(--fat)", background: "rgba(255, 23, 68, 0.05)", border: "1px solid rgba(255, 23, 68, 0.2)", borderRadius: "var(--r-lg)" }}>
+            <LogOut size={20} /> Terminate Session
           </button>
         </motion.div>
 
         {/* ─── Right Content ─── */}
         <motion.div variants={FADE_UP} style={{ gridColumn: "span 8" }}>
-          <div className="card p-8 min-h-[500px]">
+          <TiltCard className="p-10 min-h-[600px]" style={{ background: "rgba(0,0,0,0.6)" }}>
             
             {section === "profile" && (
-              <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}}>
-                <h2 className="t-h2 mb-6">Personal Information</h2>
-                <div className="grid-2 mb-6">
+              <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{type:"spring", damping:24}}>
+                <h2 className="t-h2 mb-8 text-text">Identity Parameters</h2>
+                <div className="grid-2 mb-8">
                   <div className="input-wrap">
-                    <label className="input-label">Full Name</label>
+                    <label className="input-label">Identity Designation</label>
                     <input className="input" value={form.name} onChange={set("name")} />
                   </div>
                   <div className="input-wrap">
-                    <label className="input-label">Email Address</label>
+                    <label className="input-label">Transmit Address</label>
                     <input className="input" type="email" value={form.email} onChange={set("email")} />
                   </div>
                 </div>
@@ -97,37 +96,37 @@ export default function Profile() {
             )}
 
             {section === "goals" && (
-              <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}}>
-                <h2 className="t-h2 mb-6">Goals & Macros</h2>
-                <div className="input-wrap mb-6">
-                  <label className="input-label mb-2">Primary Goal</label>
-                  <div className="flex gap-2" style={{ flexWrap:"wrap" }}>
+              <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{type:"spring", damping:24}}>
+                <h2 className="t-h2 mb-8 text-text">Targets & Limits</h2>
+                <div className="input-wrap mb-8">
+                  <label className="input-label mb-3">Primary Objective</label>
+                  <div className="flex gap-3" style={{ flexWrap:"wrap" }}>
                     {GOALS.map(g => (
-                      <button key={g} className={`chip ${form.goal===g?"active":""}`} onClick={() => setForm(f => ({...f,goal:g}))}>{g}</button>
+                      <button key={g} className={`chip ${form.goal===g?"active":""}`} style={{ padding: "12px 24px" }} onClick={() => setForm(f => ({...f,goal:g}))}>{g}</button>
                     ))}
                   </div>
                 </div>
-                <div className="grid-2" style={{ gap:"var(--sp-6)" }}>
+                <div className="grid-2" style={{ gap:"var(--sp-8)" }}>
                   <div className="input-wrap">
-                    <label className="input-label">Daily Calories</label>
-                    <input className="input" type="number" value={form.calories} onChange={set("calories")} />
+                    <label className="input-label">Caloric Limit</label>
+                    <input className="input t-h3" type="number" value={form.calories} onChange={set("calories")} style={{ fontFamily: "monospace" }} />
                   </div>
                   <div className="input-wrap">
-                    <label className="input-label">Protein (g)</label>
-                    <input className="input" type="number" value={form.protein} onChange={set("protein")} />
+                    <label className="input-label" style={{ color: "var(--protein)" }}>Protein Target (g)</label>
+                    <input className="input t-h3" type="number" value={form.protein} onChange={set("protein")} style={{ fontFamily: "monospace", color: "var(--protein)", borderColor: "rgba(41,121,255,0.3)" }} />
                   </div>
                 </div>
               </motion.div>
             )}
 
-            {/* Save Button Sticky Bottom */}
-            <div style={{ marginTop: 40, paddingTop: 30, borderTop: "1px dashed var(--border)" }}>
-              <button className="btn btn-primary" onClick={handleSave} style={{ minWidth: 160 }}>
-                {saved ? "✓ Saved" : <><Save size={16}/> Save Changes</>}
+            {/* Sticky Save Button */}
+            <div style={{ marginTop: 80, paddingTop: 40, borderTop: "1px solid var(--glass-border)" }}>
+              <button className="btn btn-primary btn-lg" onClick={handleSave} style={{ minWidth: 200, padding: "20px" }}>
+                {saved ? "✓ Configuration Synced" : <><Save size={18}/> Commit Changes</>}
               </button>
             </div>
 
-          </div>
+          </TiltCard>
         </motion.div>
       </div>
     </motion.main>
