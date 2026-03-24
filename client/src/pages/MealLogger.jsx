@@ -1,162 +1,242 @@
 import { useState } from "react";
-import { Search, Camera, Plus, Trash2, Check } from "lucide-react";
+import { Search, SlidersHorizontal, Plus, Heart, ChevronRight, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const MEAL_TYPES = ["Breakfast","Lunch","Dinner","Snack"];
-const FOODS = [
-  { id:1, name:"Grilled Chicken Breast", desc:"100g", cal:165, p:31, c:0,  f:3.6, emoji:"🍗" },
-  { id:2, name:"Brown Rice",             desc:"1 cup",cal:216, p:5,  c:45, f:1.8, emoji:"🍚" },
-  { id:3, name:"Avocado",               desc:"½ med", cal:114, p:1,  c:6,  f:10.5, emoji:"🥑" },
-  { id:4, name:"Oatmeal",               desc:"1 cup", cal:150, p:5,  c:27, f:3.0, emoji:"🥣" },
-  { id:5, name:"Boiled Egg",            desc:"1 large",cal:78, p:6,  c:0.6,f:5.0, emoji:"🥚" },
+// ─── Mock Data matching reference screenshot ───────────────────
+const MEAL_SECTIONS = [
+  {
+    id: 1,
+    type: "Breakfast",
+    icon: "🍳",
+    totalCal: 945,
+    items: [
+      { id: 1, name: "Hard-Boiled Egg & Oatmeal", desc: "280 kcal • 1 egg + 1 bowl", cal: 280 },
+    ],
+  },
+  {
+    id: 2,
+    type: "Lunch",
+    icon: "🥗",
+    totalCal: 650,
+    items: [
+      { id: 2, name: "Grilled Chicken Salad", desc: "350 kcal • 200g chicken", cal: 350 },
+    ],
+  },
+  {
+    id: 3,
+    type: "Dinner",
+    icon: "🍲",
+    totalCal: 580,
+    items: [
+      { id: 3, name: "Salmon & Sweet Potato", desc: "520 kcal • 150g salmon", cal: 520 },
+    ],
+  },
 ];
 
-export default function MealLogger() {
-  const [type, setType] = useState("Lunch");
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState(FOODS[0]);
-  const [qty, setQty] = useState(1);
-  const [log, setLog] = useState([]);
-  const [saved, setSaved] = useState(false);
+const RECIPE_CARDS = [
+  {
+    id: 1, name: "Healthy Ice Cream", desc: "280 kcal Yogurt w/ Berries",
+    img: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=300&h=240&fit=crop",
+    liked: true,
+  },
+  {
+    id: 2, name: "Avocado Power Bowl", desc: "320 kcal Greens & Seeds",
+    img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=240&fit=crop",
+    liked: false,
+  },
+  {
+    id: 3, name: "Berry Smoothie Bowl", desc: "245 kcal Mixed Berries & Granola",
+    img: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=300&h=240&fit=crop",
+    liked: false,
+  },
+];
 
-  const filtered = FOODS.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
-  const total = log.reduce((a, i) => ({ cal:a.cal+i.cal*i.qty, p:a.p+i.p*i.qty, c:a.c+i.c*i.qty, f:a.f+i.f*i.qty }), {cal:0,p:0,c:0,f:0});
-  const add = () => { if(!selected) return; setLog([...log, {...selected, qty, key:Date.now()}]); setQty(1); };
-  const save = () => { setSaved(true); setTimeout(()=>setSaved(false), 2000); };
+const FADE = (d = 0) => ({
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.45, ease: [0.34, 1.56, 0.64, 1], delay: d },
+});
+
+export default function MealLogger() {
+  const [search, setSearch] = useState("");
+  const [liked, setLiked] = useState(new Set([1]));
+  const [sections, setSections] = useState(MEAL_SECTIONS);
+
+  const toggleLike = (id) => {
+    setLiked(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   return (
-    <main className="page-content">
-      <div className="flex justify-between items-center mb-6 fade-up">
-        <div>
-          <h1 className="t-h1">Diet Log</h1>
-          <p className="t-body mt-1">Discover healthy meals, ready in minutes.</p>
-        </div>
-      </div>
+    <main className="page-content" style={{ maxWidth: 680, margin: "0 auto" }}>
 
-      {/* chip row */}
-      <div className="flex gap-3 mb-6 fade-up fade-up-1" style={{ flexWrap:"wrap" }}>
-        {MEAL_TYPES.map(t => (
-          <button key={t} className={`chip ${type===t?"active":""}`} onClick={()=>setType(t)}>{t}</button>
+      {/* ─── Header ─── */}
+      <motion.div {...FADE(0)} className="flex items-center justify-between mb-8">
+        <button className="btn-icon" style={{ width: 48, height: 48 }}>
+          <ArrowLeft size={20} />
+        </button>
+        <h2 className="t-h3" style={{ position: "absolute", left: "50%", transform: "translateX(-50%)" }}>
+          Recipe
+        </h2>
+        <div style={{ width: 48 }} />
+      </motion.div>
+
+      {/* ─── Page Title ─── */}
+      <motion.div {...FADE(0.05)} className="mb-6">
+        <h1 className="t-display" style={{ lineHeight: 1.1 }}>
+          Today's Nutritious<br />Meal Ideas
+        </h1>
+      </motion.div>
+
+      {/* ─── Pill Search Bar ─── */}
+      <motion.div {...FADE(0.1)} className="mb-8">
+        <div style={{
+          display: "flex", alignItems: "center", gap: 12,
+          background: "#FFFFFF", borderRadius: 100, padding: "0 20px", height: 60,
+          boxShadow: "var(--shadow-outer)"
+        }}>
+          <Search size={20} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+          <input
+            style={{ flex: 1, border: "none", background: "none", fontSize: "1rem", color: "var(--text)", outline: "none" }}
+            placeholder="Search Recipes.."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <div style={{ width: 1, height: 24, background: "var(--bg-alt)" }} />
+          <SlidersHorizontal size={20} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
+        </div>
+      </motion.div>
+
+      {/* ─── Meal Section Cards (Green, Yazio-style) ─── */}
+      <div className="flex-col gap-4 mb-8">
+        {sections.map((section, i) => (
+          <motion.div key={section.id} {...FADE(0.12 + i * 0.06)}>
+            <div style={{
+              background: "var(--primary-light)",
+              borderRadius: 24, padding: "20px 24px",
+              boxShadow: "none",
+            }}>
+              {/* Section Header */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  {/* Icon circle */}
+                  <div style={{
+                    width: 48, height: 48, borderRadius: "50%",
+                    background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "var(--shadow-outer)", fontSize: 22
+                  }}>
+                    {section.icon}
+                  </div>
+                  <span className="t-h2">{section.type}</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span style={{ fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.03em", color: "var(--text)" }}>
+                    {section.totalCal}
+                  </span>
+                  <span className="t-body-med text-secondary">kcal</span>
+                </div>
+              </div>
+
+              {/* Meal Items */}
+              {section.items.map(item => (
+                <div key={item.id} className="flex items-center justify-between">
+                  <div>
+                    <div className="t-h3 mb-1">{item.name}</div>
+                    <div className="t-body">{item.desc}</div>
+                  </div>
+                  {/* Round + button */}
+                  <motion.button
+                    whileTap={{ scale: 0.88 }}
+                    style={{
+                      width: 48, height: 48, borderRadius: "50%",
+                      background: "#FFFFFF", border: "none", cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      flexShrink: 0, marginLeft: 16,
+                      boxShadow: "var(--shadow-outer)"
+                    }}
+                  >
+                    <Plus size={22} color="var(--text)" />
+                  </motion.button>
+                </div>
+              ))}
+            </div>
+          </motion.div>
         ))}
       </div>
 
-      <div className="bento-grid">
-        {/* ─── Left: Search ─── */}
-        <div style={{ gridColumn:"span 7" }} className="fade-up fade-up-1">
-          <div className="card p-6">
-            <div className="search-bar mb-5">
-              <Search size={18} style={{ color:"var(--text-muted)", flexShrink:0 }} />
-              <input placeholder="Search Recipes..." value={search} onChange={e=>setSearch(e.target.value)} />
-              <button className="btn-icon" style={{ width:36, height:36 }}><Camera size={16}/></button>
-            </div>
+      {/* ─── Recipe Cards (White, with image on right) ─── */}
+      <div className="flex-col gap-4">
+        {RECIPE_CARDS.map((recipe, i) => (
+          <motion.div key={recipe.id} {...FADE(0.2 + i * 0.07)}>
+            <div style={{
+              background: "#FFFFFF", borderRadius: 24,
+              boxShadow: "var(--shadow-outer)",
+              overflow: "hidden", display: "flex",
+              minHeight: 160,
+            }}>
+              {/* Text Side */}
+              <div style={{ flex: 1, padding: "20px 20px 20px 24px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                {/* Heart */}
+                <motion.button
+                  whileTap={{ scale: 0.80 }}
+                  onClick={() => toggleLike(recipe.id)}
+                  style={{ background: "none", border: "none", cursor: "pointer", width: 28, textAlign: "left", marginBottom: 8 }}
+                >
+                  <Heart
+                    size={24}
+                    fill={liked.has(recipe.id) ? "var(--text)" : "none"}
+                    color={liked.has(recipe.id) ? "var(--text)" : "var(--text-muted)"}
+                  />
+                </motion.button>
 
-            <p className="t-xs mb-3">Results</p>
-            <div className="flex-col gap-3">
-              {filtered.map(item => (
-                <motion.div key={item.id} whileHover={{ y:-2 }} whileTap={{ scale:0.97 }}
-                  onClick={()=>setSelected(item)} className="flex justify-between items-center"
+                <div>
+                  <div className="t-h3 mb-1">{recipe.name}</div>
+                  <div className="t-body mb-4">{recipe.desc}</div>
+                </div>
+
+                {/* See Recipe pill */}
+                <motion.button
+                  whileTap={{ scale: 0.94 }}
                   style={{
-                    padding:"14px 18px", borderRadius:"var(--r-md)", cursor:"pointer",
-                    background: selected?.id===item.id ? "var(--primary-light)" : "var(--surface-inset)",
-                    boxShadow: selected?.id===item.id ? "none" : "var(--shadow-inset)",
-                    transition:"all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)"
+                    display: "inline-flex", alignItems: "center", gap: 8,
+                    background: "#141A10", color: "#FFFFFF",
+                    border: "none", borderRadius: 100,
+                    padding: "10px 20px", fontSize: ".875rem", fontWeight: 600,
+                    cursor: "pointer", alignSelf: "flex-start"
+                  }}
+                >
+                  See Recipe
+                  <div style={{
+                    width: 20, height: 20, borderRadius: "50%",
+                    background: "rgba(255,255,255,0.15)",
+                    display: "flex", alignItems: "center", justifyContent: "center"
                   }}>
-                  <div className="flex items-center gap-3">
-                    <span style={{ fontSize:24 }}>{item.emoji}</span>
-                    <div>
-                      <div className="t-body-med">{item.name}</div>
-                      <div className="t-sm mt-1">{item.desc} • {item.cal} kcal</div>
-                    </div>
+                    <ChevronRight size={13} />
                   </div>
-                  <div className="flex gap-3 t-sm text-muted">
-                    <span>P {item.p}g</span><span>C {item.c}g</span><span>F {item.f}g</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ─── Right: Entry Builder ─── */}
-        <div style={{ gridColumn:"span 5" }} className="flex-col gap-5 fade-up fade-up-2">
-          <AnimatePresence mode="wait">
-            {selected && (
-              <motion.div key={selected.id} initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-12}} transition={{duration:0.4, ease:[0.34,1.56,0.64,1]}}
-                className="card p-6">
-                <div className="flex items-center gap-3 mb-5">
-                  <span style={{ fontSize:36 }}>{selected.emoji}</span>
-                  <div>
-                    <h3 className="t-h3">{selected.name}</h3>
-                    <p className="t-sm">{selected.desc}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-baseline gap-3 mb-6">
-                  <span className="t-stat" style={{ fontSize:"3.5rem" }}>{Math.round(selected.cal*qty)}</span>
-                  <span className="t-body text-secondary">kcal</span>
-                </div>
-
-                <div className="grid-3 mb-6">
-                  {[{l:"Protein",v:selected.p,c:"var(--protein)"},{l:"Carbs",v:selected.c,c:"var(--carbs)"},{l:"Fat",v:selected.f,c:"var(--fat)"}].map(m => (
-                    <div key={m.l} className="card-inset text-center" style={{ padding:"12px 8px", borderRadius:"var(--r-md)" }}>
-                      <div className="t-h3" style={{ color: m.c }}>{Math.round(m.v*qty)}g</div>
-                      <div className="t-xs mt-1">{m.l}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="flex items-center gap-2 card-inset" style={{ padding:"8px 16px", borderRadius:"var(--r-pill)" }}>
-                    <button className="btn btn-ghost btn-sm" onClick={()=>setQty(Math.max(0.5,qty-0.5))}>−</button>
-                    <span className="t-body-med" style={{ minWidth:30, textAlign:"center" }}>{qty}</span>
-                    <button className="btn btn-ghost btn-sm" onClick={()=>setQty(qty+0.5)}>+</button>
-                  </div>
-                  <button className="btn btn-cta" style={{ flex:1, padding:"14px" }} onClick={add}>
-                    <Plus size={16}/> Add Entry
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Log */}
-          <div className="card p-6" style={{ flex:1 }}>
-            <div className="flex justify-between items-center mb-5">
-              <h3 className="t-h3">{type}</h3>
-              <span className="t-body-med" style={{ color:"var(--accent-cta)" }}>{Math.round(total.cal)} kcal</span>
-            </div>
-
-            {log.length === 0 ? (
-              <div className="card-inset text-center" style={{ padding:"40px 20px", borderRadius:"var(--r-md)" }}>
-                <p className="t-body">Nothing added yet 🍽️</p>
+                </motion.button>
               </div>
-            ) : (
-              <div className="flex-col gap-3">
-                <AnimatePresence>
-                  {log.map((item, i) => (
-                    <motion.div key={item.key} initial={{opacity:0,x:-10}} animate={{opacity:1,x:0}} exit={{opacity:0,scale:0.94}} transition={{duration:0.35, ease:[0.34,1.56,0.64,1]}}
-                      className="flex justify-between items-center" style={{ paddingBottom:i<log.length-1?12:0, borderBottom:i<log.length-1?"1px solid var(--bg-alt)":"none" }}>
-                      <div>
-                        <div className="t-body-med">{item.emoji} {item.name}</div>
-                        <div className="t-sm mt-1">{item.qty} × {item.desc}</div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="t-sm-med" style={{ color:"var(--accent-cta)" }}>{Math.round(item.cal*item.qty)}</span>
-                        <button className="btn-icon" style={{ width:32,height:32,background:"rgba(220,76,76,0.08)",boxShadow:"none",color:"#c04040" }} onClick={()=>setLog(l=>l.filter(x=>x.key!==item.key))}>
-                          <Trash2 size={14}/>
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-                <button className="btn btn-soft btn-w-full mt-3" style={{ padding:"14px" }} onClick={save} disabled={saved}>
-                  {saved ? <span className="flex items-center gap-2" style={{color:"var(--accent-cta)"}}><Check size={16}/> Logged!</span> : "Save Log"}
-                </button>
+
+              {/* Food Image */}
+              <div style={{ width: 160, flexShrink: 0, position: "relative" }}>
+                <img
+                  src={recipe.img}
+                  alt={recipe.name}
+                  style={{
+                    width: "100%", height: "100%", objectFit: "cover",
+                    borderRadius: "0 24px 24px 0",
+                    display: "block"
+                  }}
+                  onError={e => { e.target.style.background = "var(--primary-light)"; e.target.style.display = "none"; }}
+                />
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
+
     </main>
   );
 }

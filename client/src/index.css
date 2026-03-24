@@ -16,27 +16,28 @@
   --g6: #104F17; /* Deep forest — display text, dark headers */
   --g7: #083316; /* Near-black green — deepest text, sidebar base */
 
-  /* ── Semantic Aliases (all components reference these) ──────── */
-  --bg:             #F0F3E8; /* Off-white with a g1 warmth hint */
-  --bg-alt:         #E5EAD8; /* Slightly deeper warm-green trough */
-  --surface:        #FAFCF5; /* Card surface — bright, g1-tinted white */
-  --surface-inset:  #DDE5CA; /* Inset / search bar — g2-derivation */
+  /* ── Semantic Aliases — precision-matched to screenshot ────── */
+  --bg:             #E4EDD8; /* Exact pale sage seen in screenshot bg */
+  --bg-alt:         #D8E6C8; /* Deeper trough for inset elements */
+  --surface:        #FFFFFF; /* Pure white cards — exactly as reference */
+  --surface-inset:  #FFFFFF; /* Search bar is also white (not inset) */
+  --surface-green:  #C8DDB8; /* The flat green category card surface */
 
-  /* Neumorphism-Lite Shadows — now warm yellow-green light source */
-  --shadow-outer:   4px 4px 14px rgba(120, 163, 61, 0.22), -4px -4px 12px rgba(255, 255, 240, 0.95);
-  --shadow-inset:   inset 3px 3px 8px rgba(120, 163, 61, 0.20), inset -3px -3px 8px rgba(255, 255, 240, 0.85);
-  --shadow-float:   6px 6px 24px rgba(75, 135, 43, 0.22), -4px -4px 16px rgba(255, 255, 240, 0.98);
+  /* Neumorphism-Lite Shadows — very subtle as in reference */
+  --shadow-outer:   0 2px 12px rgba(80, 120, 60, 0.10), 0 1px 4px rgba(80, 120, 60, 0.06);
+  --shadow-inset:   inset 1px 1px 4px rgba(80, 120, 60, 0.08);
+  --shadow-float:   0 8px 24px rgba(80, 120, 60, 0.14), 0 2px 8px rgba(80, 120, 60, 0.08);
 
-  /* Typography — taken directly from depth tier */
-  --text:           #083316; /* g7 — near-black green for max legibility */
-  --text-secondary: #266B1C; /* g5 — readable dark green body text */
-  --text-muted:     #78A33D; /* g3 — muted labels and placeholders */
+  /* Typography — dark charcoal text on pale green background */
+  --text:           #141A10; /* Near-black with green tint */
+  --text-secondary: #5A6A52; /* Mid forest green — body labels */
+  --text-muted:     #8FAD80; /* Muted green — placeholder, small copy */
 
-  /* Green Accent System — directly from palette tiers */
-  --primary:        #78A33D; /* g3 — mid-green bars, icons, active elements */
-  --primary-light:  #D9EBBB; /* g2-tinted tint — chip/badge backgrounds */
-  --accent:         #4B872B; /* g4 — hover / secondary CTA */
-  --accent-cta:     #266B1C; /* g5 — primary CTA pill buttons */
+  /* Green Accent System */
+  --primary:        #78A33D; /* g3 — bars, icons, chip icons */
+  --primary-light:  #C8DDB8; /* The flat green card surface */
+  --accent:         #4B872B; /* g4 — tag fills, hover states */
+  --accent-cta:     #1A1A1A; /* Near-black for pill CTAs like "See Recipe" */
 
   /* Macro Colors (warm earth tones — harmonized with yellow-green base) */
   --protein:        #5A8FC4; /* Muted blue — contrasts cleanly */

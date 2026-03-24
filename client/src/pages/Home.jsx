@@ -1,30 +1,24 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Bell, ChevronDown, Sparkles, Plus, Droplets } from "lucide-react";
+import { Bell, ChevronDown, Plus, Droplets, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 const DAILY_GOAL = 1850;
-const CONSUMED = 1420;
-const BURNED = 280;
-const NET = CONSUMED - BURNED;
+const CONSUMED = 3143;
+const BURNED = 650;
+const NET_OVER = CONSUMED - DAILY_GOAL; // over by this amount
 
 const MACROS = [
-  { label: "Carbs",   current: 162, goal: 185, color: "var(--carbs)",   unit:"g" },
-  { label: "Protein", current: 88,  goal: 145, color: "var(--protein)", unit:"g" },
-  { label: "Fat",     current: 45,  goal: 58,  color: "var(--fat)",     unit:"g" },
+  { label: "Carbs",   current: 271, goal: 359, color: "#E8784A" },
+  { label: "Protein", current: 202, goal: 143, color: "#4A8FD8" },
+  { label: "Fat",     current: 169, goal: 359, color: "#D4A030" },
 ];
 
-const MEALS = [
-  { name: "Breakfast",   foods: "Oatmeal, Berries",       cal: 420 },
-  { name: "Lunch",       foods: "Grilled Chicken Salad",  cal: 580 },
-  { name: "Snack",       foods: "Greek Yogurt",           cal: 150 },
-];
-
-const FADE = (delay = 0) => ({
-  initial: { opacity: 0, y: 20 },
+const FADE = (d = 0) => ({
+  initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, ease: [0.34, 1.56, 0.64, 1], delay }
+  transition: { duration: 0.45, ease: [0.34, 1.56, 0.64, 1], delay: d },
 });
 
 export default function Home() {
@@ -38,122 +32,166 @@ export default function Home() {
     else if (h >= 17) setGreeting("Good evening");
   }, []);
 
-  const remaining = DAILY_GOAL - NET;
-  const pct = Math.min(NET / DAILY_GOAL, 1);
-
   return (
-    <main className="page-content">
+    <main className="page-content" style={{ maxWidth: 680, margin: "0 auto" }}>
 
       {/* ─── Header ─── */}
-      <motion.div {...FADE(0)} className="flex justify-between items-center mb-8">
-        <div>
-          <p className="t-sm text-muted mb-1">{greeting} 👋</p>
-          <h1 className="t-h1">Hi, {user?.name?.split(" ")[0] || "there"}</h1>
+      <motion.div {...FADE(0)} className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          {/* User avatar */}
+          <div style={{
+            width: 48, height: 48, borderRadius: "50%",
+            background: "var(--primary-light)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 20, fontWeight: 700, color: "var(--text)",
+            boxShadow: "var(--shadow-outer)"
+          }}>
+            {user?.name?.[0] || "A"}
+          </div>
+          <div>
+            <p className="t-xs">Hi, {user?.name?.split(" ")[0] || "there"}</p>
+            <p className="t-sm-med">Welcome Back</p>
+          </div>
         </div>
-        <button className="btn-icon"><Bell size={20} /></button>
+        <button style={{
+          width: 44, height: 44, borderRadius: "50%",
+          background: "#FFFFFF", border: "none", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "var(--shadow-outer)"
+        }}>
+          <Bell size={20} color="var(--text)" />
+        </button>
       </motion.div>
 
-      {/* ─── Hero Calorie Card ─── */}
-      <motion.div {...FADE(0.05)} className="card p-8 mb-5" style={{ background: "var(--surface)", position: "relative", overflow: "hidden" }}>
-        {/* Soft decorative blob */}
-        <div style={{ position:"absolute", top:-40, right:-40, width:200, height:200, borderRadius:"50%", background:"var(--primary-light)", opacity:0.5, zIndex:0 }} />
-        
-        <div style={{ position: "relative", zIndex:1 }}>
-          <p className="t-xs mb-2">Today's Nutrition Overview</p>
-          
+      {/* ─── Hero Nutrition Card ─── */}
+      <motion.div {...FADE(0.06)} style={{
+        background: "#FFFFFF", borderRadius: 28, padding: "28px 24px 24px",
+        boxShadow: "var(--shadow-outer)", marginBottom: 16, position: "relative", overflow: "hidden"
+      }}>
+        {/* Soft decorative blob top-right */}
+        <div style={{
+          position: "absolute", top: -60, right: -60, width: 200, height: 200,
+          borderRadius: "50%", background: "var(--primary-light)", opacity: 0.3, zIndex: 0
+        }} />
+
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <h2 className="t-h2 mb-5">Today's Nutrition<br />Overview</h2>
+
           {/* Search bar */}
-          <div className="search-bar mb-6">
-            <Sparkles size={18} style={{ color: "var(--text-muted)", flexShrink:0 }} />
-            <input placeholder="Log food or search..." />
-            <button className="btn btn-sm btn-primary-light" style={{ flexShrink: 0, padding:"6px 16px", borderRadius:"var(--r-pill)" }}>Add</button>
-          </div>
-
-          {/* Big Stats */}
-          <div>
-            <p className="t-sm mb-1" style={{ color: "var(--text-muted)" }}>Eaten {CONSUMED.toLocaleString()}</p>
-            <div className="flex items-baseline gap-3 mb-1">
-              <span className="t-mega">{Math.abs(remaining)}</span>
-              <span className="t-h2 text-secondary">{remaining >= 0 ? "kcal left" : "kcal over"}</span>
-            </div>
-            <p className="t-sm mb-4" style={{ color: "var(--text-muted)" }}>Burned {BURNED}</p>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="progress-track mb-2">
-            <motion.div className="progress-fill"
-              initial={{ width: 0 }} animate={{ width: `${pct * 100}%` }}
-              transition={{ duration: 1.2, ease: [0.34, 1.56, 0.64, 1], delay: 0.3 }}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 12,
+            background: "var(--bg)", borderRadius: 100,
+            padding: "0 16px 0 20px", height: 52,
+            boxShadow: "var(--shadow-inset)", marginBottom: 24
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input
+              style={{ flex: 1, border: "none", background: "none", fontSize: ".9375rem", color: "var(--text)", outline: "none" }}
+              placeholder="Search Recipes.."
             />
+            <div style={{ width: 1, height: 20, background: "var(--bg-alt)" }} />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/></svg>
           </div>
-          <div className="flex justify-between t-xs text-muted">
-            <span>0</span><span>Goal {DAILY_GOAL.toLocaleString()} kcal</span>
+
+          {/* Stats */}
+          <p className="t-body mb-1">Eaten {CONSUMED.toLocaleString()}</p>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: "clamp(4rem,10vw,6.5rem)", fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1, color: "var(--text)" }}>
+              {NET_OVER}
+            </span>
+            <span className="t-h2 text-secondary">kcal over</span>
+          </div>
+          <p className="t-body mb-5">Burned {BURNED}</p>
+
+          {/* Progress bar */}
+          <div style={{ height: 10, borderRadius: 100, background: "var(--bg-alt)", overflow: "hidden", marginBottom: 6 }}>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: "78%" }}
+              transition={{ duration: 1.2, ease: [0.34, 1.56, 0.64, 1], delay: 0.3 }}
+              style={{ height: "100%", borderRadius: 100, background: "linear-gradient(90deg, var(--primary), #4B872B)" }}
+            />
           </div>
 
           {/* See Stats */}
-          <Link to="/progress" className="flex items-center gap-1 t-sm-med mt-4" style={{ color:"var(--accent-cta)" }}>
+          <Link to="/progress" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 8, color: "var(--text-secondary)", fontSize: ".875rem", fontWeight: 500 }}>
             See Stats <ChevronDown size={14} />
           </Link>
         </div>
       </motion.div>
 
-      {/* ─── Macro Trio ─── */}
-      <motion.div {...FADE(0.1)} className="grid-3 mb-5">
+      {/* ─── Macro Trio (Exact Yazio pill layout) ─── */}
+      <motion.div {...FADE(0.12)} style={{
+        display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 16
+      }}>
         {MACROS.map((m, i) => (
-          <div key={m.label} className="macro-pill">
-            <div className="flex justify-between items-baseline">
-              <span className="t-xs">{m.label}</span>
-              <span className="t-sm-med">{m.current}<span className="t-xs text-muted">/{m.goal}{m.unit}</span></span>
+          <div key={m.label} style={{
+            background: "#FFFFFF", borderRadius: 20, padding: "16px 18px",
+            boxShadow: "var(--shadow-outer)"
+          }}>
+            <div style={{ marginBottom: 8 }}>
+              <span style={{ fontSize: ".8125rem", fontWeight: 600, color: "var(--text-secondary)" }}>{m.label}</span>
             </div>
-            <div className="progress-track thin">
-              <motion.div className="progress-fill" style={{ background: m.color }}
+            <div style={{ marginBottom: 8 }}>
+              <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text)" }}>{m.current}</span>
+              <span style={{ fontSize: ".8rem", color: "var(--text-muted)" }}>/{m.goal}g</span>
+            </div>
+            {/* Colored progress bar */}
+            <div style={{ height: 5, borderRadius: 100, background: "var(--bg-alt)", overflow: "hidden" }}>
+              <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${(m.current/m.goal)*100}%` }}
-                transition={{ duration: 1.0, delay: 0.2 + i * 0.1, ease: [0.34, 1.56, 0.64, 1] }}
+                animate={{ width: `${Math.min((m.current / m.goal) * 100, 100)}%` }}
+                transition={{ duration: 1, ease: [0.34, 1.56, 0.64, 1], delay: 0.2 + i * 0.08 }}
+                style={{ height: "100%", borderRadius: 100, background: m.color }}
               />
             </div>
           </div>
         ))}
       </motion.div>
 
-      {/* ─── Meal Log Preview ─── */}
-      <motion.div {...FADE(0.15)} className="card p-6 mb-5">
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="t-h3">Today's Meals</h2>
-          <Link to="/log" className="btn btn-sm btn-primary-light"><Plus size={14}/>Add</Link>
-        </div>
-        <div className="flex-col gap-3">
-          {MEALS.map((meal,i) => (
-            <div key={i} className="flex justify-between items-center" style={{
-              padding:"14px 18px", background:"var(--bg)", borderRadius:"var(--r-md)",
-              boxShadow:"var(--shadow-inset)"
-            }}>
-              <div>
-                <div className="t-body-med">{meal.name}</div>
-                <div className="t-sm mt-1">{meal.foods}</div>
-              </div>
-              <span className="t-body-med" style={{ color:"var(--accent-cta)" }}>{meal.cal}</span>
+      {/* ─── Today's Recipes CTA ─── */}
+      <motion.div {...FADE(0.18)}>
+        <Link to="/log" style={{ textDecoration: "none" }}>
+          <div style={{
+            background: "var(--primary-light)", borderRadius: 24, padding: "20px 24px",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            boxShadow: "none", marginBottom: 16
+          }}>
+            <div>
+              <p className="t-xs mb-1">Explore</p>
+              <p className="t-h3">Today's Nutritious<br/>Meal Ideas</p>
             </div>
-          ))}
-        </div>
+            <div style={{
+              width: 48, height: 48, borderRadius: "50%", background: "#FFFFFF",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "var(--shadow-outer)", flexShrink: 0
+            }}>
+              <ArrowRight size={22} color="var(--text)" />
+            </div>
+          </div>
+        </Link>
       </motion.div>
 
       {/* ─── Hydration ─── */}
-      <motion.div {...FADE(0.2)} className="card p-6">
-        <div className="flex justify-between items-center mb-5">
+      <motion.div {...FADE(0.22)} style={{
+        background: "#FFFFFF", borderRadius: 24, padding: "20px 24px",
+        boxShadow: "var(--shadow-outer)"
+      }}>
+        <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-2">
-            <Droplets size={20} style={{ color:"var(--protein)" }} />
-            <h2 className="t-h3">Hydration</h2>
+            <Droplets size={20} style={{ color: "var(--protein)" }} />
+            <span className="t-h3">Hydration</span>
           </div>
-          <span className="t-body-med" style={{ color:"var(--accent-cta)" }}>{water}/8 cups</span>
+          <span style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text)" }}>{water}<span className="t-body"> / 8</span></span>
         </div>
-        <div className="flex gap-2" style={{ flexWrap:"wrap" }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {[...Array(8)].map((_, i) => (
-            <motion.button key={i} whileTap={{ scale: 0.88 }} onClick={() => setWater(i+1)}
+            <motion.button key={i} whileTap={{ scale: 0.82 }} onClick={() => setWater(i + 1)}
               style={{
-                width:42, height:48, borderRadius:14, border:"none",
-                background: i < water ? "var(--protein)" : "var(--surface-inset)",
-                boxShadow: i < water ? "none" : "var(--shadow-outer)",
-                cursor:"pointer", transition:"all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)"
+                width: 38, height: 44, borderRadius: 12, border: "none", cursor: "pointer",
+                background: i < water ? "#4A8FD8" : "var(--bg-alt)",
+                boxShadow: i < water ? "none" : "var(--shadow-inset)",
+                transition: "all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)"
               }}
             />
           ))}
