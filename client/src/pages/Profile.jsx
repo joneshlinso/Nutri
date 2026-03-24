@@ -3,96 +3,78 @@ import { useAuth } from "../context/AuthContext";
 import { User, Target, Utensils, Bell, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const GOALS = ["Lean Out","Hypertrophy","Maintenance","Longevity"];
-
-const STAGGER = { visible: { transition: { staggerChildren: 0.1 } } };
-const FADE_UP = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition:{ duration: 0.8, ease: [0.16, 1, 0.3, 1] } } };
+const GOALS = ["Lose Weight","Gain Muscle","Maintenance","Better Health"];
 
 export default function Profile() {
   const { user, logout } = useAuth();
   const [section, setSection] = useState("profile");
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
-    name:     user?.name    || "Alex Chen",
-    email:    user?.email   || "alex@example.com",
-    goal:     "Lean Out",
-    calories: "1850",
-    protein:  "145", carbs: "185", fat: "58",
+    name:     user?.name  || "Alex Chen",
+    email:    user?.email || "alex@example.com",
+    goal:"Lose Weight", calories:"1850", protein:"145",
   });
-  
-  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
-  const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
-  const initials = form.name.split(" ").map(n=>n[0]).join("").toUpperCase().slice(0,2) || "U";
+  const set = k => e => setForm(f => ({...f,[k]:e.target.value}));
+  const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2000); };
+  const initials = form.name.split(" ").map(n=>n[0]).join("").toUpperCase().slice(0,2)||"U";
 
   const SECTIONS = [
-    { id:"profile",  icon:User,     label:"Account Metrics"   },
-    { id:"goals",    icon:Target,   label:"Physiological Goals" },
-    { id:"diet",     icon:Utensils, label:"Dietary Protocol"  },
-    { id:"notifs",   icon:Bell,     label:"Telemetrics"  },
+    { id:"profile", icon:User,     label:"Profile" },
+    { id:"goals",   icon:Target,   label:"Goals" },
+    { id:"diet",    icon:Utensils, label:"Diet Prefs" },
+    { id:"notifs",  icon:Bell,     label:"Notifications" },
   ];
 
   return (
-    <motion.main className="page-content" initial="hidden" animate="visible" variants={STAGGER}>
-      <motion.header variants={FADE_UP} className="mb-12">
-         <h1 className="t-display tracking-tight text-text mb-2">Settings</h1>
-         <p className="t-h3 text-secondary">Configure your core system parameters.</p>
-      </motion.header>
+    <main className="page-content">
+      <div className="mb-6 fade-up">
+        <h1 className="t-h1">Profile</h1>
+        <p className="t-body mt-1">Manage your account and nutrition goals.</p>
+      </div>
 
-      <div className="bento-grid" style={{ alignItems: "start" }}>
+      <div className="bento-grid" style={{ alignItems:"start" }}>
         
-        {/* ─── Left Sidebar Nav ─── */}
-        <motion.div variants={FADE_UP} style={{ gridColumn: "span 4" }} className="flex-col gap-8">
-          <div className="card p-10 text-center card-hover">
-            <div style={{ width:96,height:96,fontSize:28,margin:"0 auto var(--sp-6)",background:"var(--surface-solid)",color:"var(--text)",display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"50%", border:"1px solid var(--border-dark)", boxShadow:"var(--shadow-md)" }}>
+        {/* Left Nav */}
+        <div style={{ gridColumn:"span 4" }} className="flex-col gap-5 fade-up fade-up-1">
+          <div className="card p-8 text-center">
+            <div style={{ width:80,height:80,borderRadius:"50%",background:"var(--primary-light)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,fontWeight:700,color:"var(--accent-cta)",margin:"0 auto var(--sp-5)" }}>
               {initials}
             </div>
-            <h2 className="t-h2 text-text mb-1">{form.name}</h2>
-            <p className="t-body mb-6">{form.email}</p>
-            <div className="flex gap-2 justify-center">
-              <span className="badge">Protocol: {form.goal}</span>
-            </div>
+            <h2 className="t-h3">{form.name}</h2>
+            <p className="t-sm mt-1 mb-4">{form.email}</p>
+            <span className="badge">🎯 {form.goal}</span>
           </div>
 
-          <div className="card p-4 card-hover">
-            {SECTIONS.map(({ id, icon:Icon, label }) => (
-              <button key={id} onClick={() => setSection(id)}
-                style={{
-                  width:"100%", display:"flex", alignItems:"center", gap:16, padding:"16px 20px",
-                  background: section===id ? "var(--surface-solid)" : "transparent",
-                  boxShadow: section===id ? "var(--shadow-sm)" : "none",
-                  borderRadius: "var(--r-md)", border:"none", cursor: "pointer",
-                  color: section===id ? "var(--text)" : "var(--text-secondary)",
-                  transition:"var(--transit)"
-                }}>
-                <Icon size={18} style={{ opacity: section===id ? 1 : 0.6 }} />
-                <span className="t-body-med">{label}</span>
+          <div className="card p-3">
+            {SECTIONS.map(({id,icon:Icon,label}) => (
+              <button key={id} onClick={()=>setSection(id)} className={`nav-item ${section===id?"active":""}`}>
+                <Icon size={18}/><span>{label}</span>
               </button>
             ))}
           </div>
 
-          <button onClick={logout} className="btn btn-ghost w-full" style={{ padding: "20px", color: "var(--fat)", border: "1px solid var(--border-dark)", background: "rgba(255,255,255,0.4)" }}>
-            <LogOut size={16} /> End Session
+          <button onClick={logout} className="btn btn-soft btn-w-full" style={{ padding:"16px", color:"#c04040", justifyContent:"center", gap:8 }}>
+            <LogOut size={18}/> Sign Out
           </button>
-        </motion.div>
+        </div>
 
-        {/* ─── Right Content ─── */}
-        <motion.div variants={FADE_UP} style={{ gridColumn: "span 8" }}>
-          <div className="card p-12 min-h-[600px] card-hover" style={{ background: "var(--surface-solid)" }}>
-            
+        {/* Right Content */}
+        <div style={{ gridColumn:"span 8" }} className="fade-up fade-up-2">
+          <div className="card p-8" style={{ minHeight:480 }}>
             <AnimatePresence mode="wait">
-              <motion.div key={section} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
+              <motion.div key={section} initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-12}} transition={{duration:0.4, ease:[0.34,1.56,0.64,1]}}>
                 
                 {section === "profile" && (
                   <div>
-                    <h2 className="t-xs mb-10">Account Metrics</h2>
-                    <div className="grid-2 mb-10">
+                    <h2 className="t-h3 mb-6">Account Details</h2>
+                    <div className="grid-2 mb-6">
                       <div className="input-wrap">
                         <label className="input-label">Full Name</label>
-                        <input className="input" value={form.name} onChange={set("name")} />
+                        <input className="input" value={form.name} onChange={set("name")}/>
                       </div>
                       <div className="input-wrap">
-                        <label className="input-label">Email Address</label>
-                        <input className="input" type="email" value={form.email} onChange={set("email")} />
+                        <label className="input-label">Email</label>
+                        <input className="input" type="email" value={form.email} onChange={set("email")}/>
                       </div>
                     </div>
                   </div>
@@ -100,32 +82,25 @@ export default function Profile() {
 
                 {section === "goals" && (
                   <div>
-                    <h2 className="t-xs mb-10">Physiological Goals</h2>
-                    <div className="input-wrap mb-12">
-                      <label className="input-label mb-4">Primary Protocol</label>
-                      <div className="flex gap-4" style={{ flexWrap:"wrap" }}>
+                    <h2 className="t-h3 mb-6">Nutrition Goals</h2>
+                    <div className="mb-8">
+                      <label className="input-label mb-4 block">Primary Goal</label>
+                      <div className="flex gap-3" style={{ flexWrap:"wrap" }}>
                         {GOALS.map(g => (
-                          <button key={g} 
-                            style={{ 
-                              padding: "12px 24px", borderRadius: "var(--r-pill)", border: "1px solid var(--border-dark)", 
-                              background: form.goal===g ? "var(--text)" : "transparent",
-                              color: form.goal===g ? "#FFF" : "var(--text-secondary)",
-                              cursor: "pointer", transition: "var(--transit)", fontSize: ".9375rem", fontWeight: 500 
-                            }} 
-                            onClick={() => setForm(f => ({...f,goal:g}))}>
+                          <button key={g} className={`chip ${form.goal===g?"active":""}`} style={{ padding:"10px 18px" }} onClick={()=>setForm(f=>({...f,goal:g}))}>
                             {g}
                           </button>
                         ))}
                       </div>
                     </div>
-                    <div className="grid-2" style={{ gap:"var(--sp-8)" }}>
+                    <div className="grid-2">
                       <div className="input-wrap">
-                        <label className="input-label">Daily Basal (kcal)</label>
-                        <input className="input t-h2" style={{ height: 64 }} type="number" value={form.calories} onChange={set("calories")} />
+                        <label className="input-label">Daily Calories</label>
+                        <input className="input" type="number" value={form.calories} onChange={set("calories")} style={{ fontSize:"1.25rem", fontWeight:600, height:60 }}/>
                       </div>
                       <div className="input-wrap">
                         <label className="input-label">Protein Target (g)</label>
-                        <input className="input t-h2" style={{ height: 64 }} type="number" value={form.protein} onChange={set("protein")} />
+                        <input className="input" type="number" value={form.protein} onChange={set("protein")} style={{ fontSize:"1.25rem", fontWeight:600, height:60 }}/>
                       </div>
                     </div>
                   </div>
@@ -134,16 +109,14 @@ export default function Profile() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Save Button */}
-            <div style={{ marginTop: 80, paddingTop: 40, borderTop: "1px solid var(--border-dark)" }}>
-              <button className="btn btn-primary btn-lg" onClick={handleSave} style={{ minWidth: 200, padding: "20px" }}>
-                {saved ? "Synchronized" : "Apply Configuration"}
+            <div style={{ marginTop:40, paddingTop:24, borderTop:"1px solid var(--bg-alt)" }}>
+              <button className="btn btn-cta btn-lg" onClick={save} style={{ minWidth:180 }}>
+                {saved ? "✅ Saved!" : "Save Changes"}
               </button>
             </div>
-
           </div>
-        </motion.div>
+        </div>
       </div>
-    </motion.main>
+    </main>
   );
 }

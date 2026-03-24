@@ -1,134 +1,101 @@
 import { useState, useRef, useEffect } from "react";
-import { CornerDownLeft } from "lucide-react";
+import { CornerDownLeft, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const QUICK_ACTIONS = [
-  "Analyze today's intake",
-  "Suggest an evening recipe",
-  "Calculate dinner macros",
-];
-
-const INIT_MESSAGES = [
-  {
-    id: 1, from: "ai",
-    text: "Good evening. You've consumed 1,420 kcal today. You are 57g short on target protein. How can I assist you in optimizing your remaining schedule?",
-    timestamp: new Date(Date.now() - 60000),
-    suggestions: ["Optimize protein target", "Log dinner automatically"],
-  },
-];
-
-const STAGGER = { visible: { transition: { staggerChildren: 0.1 } } };
-const FADE_UP = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition:{ duration: 0.8, ease: [0.16, 1, 0.3, 1] } } };
+const QUICK_ACTIONS = ["Analyze today's meal","Suggest a healthy snack","My protein intake"];
+const INIT_MSGS = [{
+  id:1, from:"ai",
+  text:"Hi! 👋 I'm your NutriAI coach. You've eaten 1,420 kcal today — 77% of your goal. You're 57g short on protein. Want me to suggest a meal?",
+  suggestions:["Fix protein gap","Suggest dinner"],
+}];
 
 export default function AICoach() {
-  const [messages, setMessages] = useState(INIT_MESSAGES);
-  const [input, setInput]       = useState("");
-  const [typing, setTyping]     = useState(false);
+  const [msgs, setMsgs] = useState(INIT_MSGS);
+  const [input, setInput] = useState("");
+  const [typing, setTyping] = useState(false);
   const bottomRef = useRef(null);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, typing]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [msgs, typing]);
 
-  const sendMessage = (text) => {
+  const send = (text) => {
     if (!text.trim()) return;
-    const userMsg = { id: Date.now(), from: "user", text, timestamp: new Date() };
-    setMessages(m => [...m, userMsg]);
-    setInput(""); setTyping(true);
-
+    setMsgs(m => [...m, { id:Date.now(), from:"user", text, timestamp:new Date() }]);
+    setInput("");
+    setTyping(true);
     setTimeout(() => {
-      const aiMsg = {
-        id: Date.now() + 1, from: "ai", text: `Processing context: "${text}".\n\nI recommend prioritizing whole food sources like wild-caught salmon or lean poultry to align with your physiological protocol.`, timestamp: new Date(),
-        suggestions: ["Show me a recipe"],
-      };
+      setMsgs(m => [...m, {
+        id:Date.now()+1, from:"ai",
+        text:`Great question! Based on your data for "${text}", I recommend prioritising whole foods like Greek yogurt, eggs, or a lean protein shake for your next meal. 🥗`,
+        suggestions:["Log this now"],
+      }]);
       setTyping(false);
-      setMessages(m => [...m, aiMsg]);
-    }, 1800); // Slower, "thinking" response time typical for premium AIs
-  };
-
-  const formatText = (text) => {
-    return text.split("\n").map((line, i) => {
-      const bold = line.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-      return <p key={i} dangerouslySetInnerHTML={{ __html: bold }} style={{ margin:"6px 0", lineHeight:1.6 }} />;
-    });
+    }, 1600);
   };
 
   return (
-    <motion.main className="page-content flex-col" style={{ height: "100vh", paddingBottom: 0, paddingTop: 0 }} initial="hidden" animate="visible" variants={STAGGER}>
-      <motion.div variants={FADE_UP} className="card flex-col" style={{ flex: 1, margin: "var(--sp-8) 0", overflow: "hidden", background: "var(--surface-solid)" }}>
+    <main className="page-content flex-col" style={{ height:"100vh", paddingBottom:0, paddingTop:0 }}>
+      <div className="card flex-col" style={{ flex:1, margin:"var(--sp-6) 0", overflow:"hidden" }}>
         
         {/* Header */}
-        <div style={{ padding: "32px 40px", borderBottom: "1px solid var(--border-dark)" }}>
-          <h1 className="t-h2 text-text">NutriAI Concierge</h1>
-          <p className="t-body mt-2">Intelligent dietary planning assistant.</p>
+        <div style={{ padding:"24px 28px", borderBottom:"1px solid var(--bg-alt)" }}>
+          <div className="flex items-center gap-3">
+            <div style={{ width:44, height:44, borderRadius:14, background:"var(--primary-light)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <Sparkles size={22} style={{ color:"var(--accent-cta)" }}/>
+            </div>
+            <div>
+              <h2 className="t-h3">NutriAI Coach</h2>
+              <p className="t-sm">Your personal health assistant</p>
+            </div>
+          </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="flex gap-3" style={{ padding: "24px 40px", flexWrap: "wrap", borderBottom: "1px solid var(--border-dark)", background: "var(--bg)" }}>
+        <div className="flex gap-3" style={{ padding:"16px 28px", flexWrap:"wrap", background:"var(--bg)" }}>
           {QUICK_ACTIONS.map(a => (
-            <button key={a} className="badge" onClick={() => sendMessage(a)} style={{ cursor: "pointer", border: "none", transition: "all 0.4s var(--ease-spring)" }}>
-              {a}
-            </button>
+            <button key={a} className="chip" style={{ fontSize:".8rem" }} onClick={()=>send(a)}>{a}</button>
           ))}
         </div>
 
-        {/* Chat Thread */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "40px", display: "flex", flexDirection: "column", gap: "var(--sp-8)" }}>
+        {/* Chat */}
+        <div style={{ flex:1, overflowY:"auto", padding:"24px 28px", display:"flex", flexDirection:"column", gap:"var(--sp-5)", background:"var(--bg)" }}>
           <AnimatePresence>
-            {messages.map(msg => (
-              <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} 
-                style={{ display:"flex", flexDirection:"column", alignItems: msg.from === "user" ? "flex-end" : "flex-start", gap:8 }}>
-                
-                <div style={{
-                  padding: "16px 24px",
-                  borderRadius: "var(--r-md)",
-                  maxWidth: "75%", lineHeight: 1.6, fontSize: ".9375rem",
-                  background: msg.from === "ai" ? "var(--bg)" : "var(--text)",
-                  color: msg.from === "ai" ? "var(--text)" : "#FFF",
-                  border: msg.from === "ai" ? "1px solid var(--border-dark)" : "none",
-                  borderBottomLeftRadius: msg.from === "ai" ? 4 : "var(--r-md)",
-                  borderBottomRightRadius: msg.from === "user" ? 4 : "var(--r-md)",
-                  boxShadow: "var(--shadow-sm)"
-                }}>
-                  {msg.from === "ai" ? formatText(msg.text) : msg.text}
-                </div>
-
+            {msgs.map(msg => (
+              <motion.div key={msg.id} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}}
+                transition={{duration:0.4, ease:[0.34,1.56,0.64,1]}}
+                style={{ display:"flex", flexDirection:"column", alignItems: msg.from==="user"?"flex-end":"flex-start", gap:8 }}>
+                <div className={`chat-bubble ${msg.from}`}>{msg.text}</div>
                 {msg.suggestions && (
-                  <div className="flex gap-2 mt-3" style={{ flexWrap:"wrap" }}>
+                  <div className="flex gap-2 mt-1" style={{ flexWrap:"wrap" }}>
                     {msg.suggestions.map(s => (
-                      <button key={s} className="badge" style={{ cursor: "pointer", border: "1px solid var(--border-dark)", background: "transparent", color: "var(--text-secondary)" }} onClick={() => sendMessage(s)}>
-                        {s}
-                      </button>
+                      <button key={s} className="chip" style={{ fontSize:".75rem" }} onClick={()=>send(s)}>{s}</button>
                     ))}
                   </div>
                 )}
               </motion.div>
             ))}
-
             {typing && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2">
-                <div style={{ padding:"16px 24px", background: "var(--bg)", border: "1px solid var(--border-dark)", borderRadius: "var(--r-md)", borderBottomLeftRadius: 4 }}>
-                  <span className="text-secondary t-sm" style={{ letterSpacing: "0.04em" }}>Synthesizing response...</span>
+              <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{duration:0.35}}>
+                <div className="chat-bubble ai">
+                  <span style={{ letterSpacing:4, color:"var(--text-muted)", fontSize:18 }}>•••</span>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-          <div ref={bottomRef} />
+          <div ref={bottomRef}/>
         </div>
 
-        {/* Input Terminal */}
-        <div style={{ padding: "32px 40px", borderTop: "1px solid var(--border-dark)" }}>
-          <form className="flex items-center gap-6" onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}>
-            <div className="search-bar" style={{ flex: 1, height: 64, borderRadius: "var(--r-pill)", background: "var(--bg)", padding: "0 var(--sp-6)" }}>
-              <input placeholder="Ask the concierge..." value={input} onChange={e => setInput(e.target.value)} style={{ fontSize: "1rem" }} />
+        {/* Input */}
+        <div style={{ padding:"20px 28px", background:"var(--surface)", borderTop:"1px solid var(--bg-alt)" }}>
+          <form className="flex items-center gap-4" onSubmit={e=>{e.preventDefault();send(input);}}>
+            <div className="search-bar" style={{ flex:1 }}>
+              <input placeholder="Ask your AI coach..." value={input} onChange={e=>setInput(e.target.value)}/>
             </div>
-            <button type="submit" className="btn-icon" disabled={!input.trim() || typing} style={{ width: 64, height: 64, padding: 0, background: "var(--text)", color: "#FFF" }}>
-              <CornerDownLeft size={20} />
+            <button type="submit" className="btn btn-cta" disabled={!input.trim()||typing} style={{ width:52, height:52, padding:0, borderRadius:"50%", flexShrink:0 }}>
+              <CornerDownLeft size={20}/>
             </button>
           </form>
         </div>
-
-      </motion.div>
-    </motion.main>
+      </div>
+    </main>
   );
 }

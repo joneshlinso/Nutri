@@ -17,16 +17,10 @@ function AppLayout() {
 
   return (
     <div className="app-container">
-      {/* ─── Ambient Light Layer ─── */}
-      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, background: "radial-gradient(circle at top left, rgba(255,255,255,0.8), transparent 50%), radial-gradient(circle at bottom right, rgba(59, 95, 74, 0.05), transparent 50%)" }} />
-
-      <div className="app-shell" style={{
-        gridTemplateColumns: showSidebar ? "260px 1fr" : "1fr",
-        position: "relative", zIndex: 1
-      }}>
+      <div className="app-shell" style={{ gridTemplateColumns: showSidebar ? "240px 1fr" : "1fr" }}>
         {showSidebar && <Sidebar />}
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/login"    element={<Login />} />
           <Route element={<PrivateRoute />}>
             <Route path="/"         element={<Home />} />
             <Route path="/log"      element={<MealLogger />} />
@@ -42,7 +36,7 @@ function AppLayout() {
   );
 }
 
-function App() {
+export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -51,5 +45,3 @@ function App() {
     </AuthProvider>
   );
 }
-
-export default App;
