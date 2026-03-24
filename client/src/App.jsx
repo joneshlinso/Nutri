@@ -17,8 +17,12 @@ function AppLayout() {
 
   return (
     <div className="app-container">
+      {/* ─── Ambient Light Layer ─── */}
+      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, background: "radial-gradient(circle at top left, rgba(255,255,255,0.8), transparent 50%), radial-gradient(circle at bottom right, rgba(59, 95, 74, 0.05), transparent 50%)" }} />
+
       <div className="app-shell" style={{
-        gridTemplateColumns: showSidebar ? "220px 1fr" : "1fr",
+        gridTemplateColumns: showSidebar ? "260px 1fr" : "1fr",
+        position: "relative", zIndex: 1
       }}>
         {showSidebar && <Sidebar />}
         <Routes>

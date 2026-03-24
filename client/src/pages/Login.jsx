@@ -2,6 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Apple, Eye, EyeOff } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const FADE_UP = { 
+  hidden: { opacity: 0, y: 30 }, 
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } } 
+};
 
 export default function Login() {
   const [mode, setMode] = useState("login");
@@ -27,29 +33,36 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen" style={{ background: "var(--bg)" }}>
-      <div style={{ width: 400, padding: "var(--sp-12) var(--sp-8)" }}>
+    <div className="flex items-center justify-center min-h-screen" style={{ position: "relative", overflow: "hidden" }}>
+      
+      {/* ─── Ambient Spa Lighting ─── */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0, background: "radial-gradient(circle at top left, rgba(255,255,255,1), transparent 50%), radial-gradient(circle at bottom right, rgba(59, 95, 74, 0.08), transparent 60%)" }} />
+
+      <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }} 
+        className="card" style={{ width: 440, padding: "var(--sp-12)", zIndex: 1, position: "relative", background: "rgba(255,255,255,0.8)" }}>
         
-        {/* ─── Quiet Logo ─── */}
-        <div className="flex justify-center mb-8">
-          <div style={{ width: 40, height: 40, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--r-md)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Apple size={20} className="text-text" />
+        {/* ─── Luxury Logo ─── */}
+        <motion.div variants={FADE_UP} className="flex justify-center mb-10">
+          <div style={{ width: 48, height: 48, background: "var(--surface-solid)", border: "1px solid var(--border-dark)", borderRadius: "var(--r-md)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}>
+            <Apple size={24} className="text-text" />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="text-center mb-10">
-          <h1 className="t-h1 mb-2">NutriPlanner</h1>
-          <p className="t-body">{mode === "login" ? "Sign in to your account" : "Create your account"}</p>
-        </div>
+        <motion.div variants={FADE_UP} className="text-center mb-10">
+          <h1 className="t-h2 mb-2">NutriPlanner</h1>
+          <p className="t-body">Your digital nutrition concierge.</p>
+        </motion.div>
 
-        <form onSubmit={handleSubmit} className="flex-col gap-4">
-          {mode === "signUp" && (
-            <div className="input-wrap">
-              <label className="input-label">Name</label>
-              <input className="input" placeholder="Alex Chen" required
-                value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} />
-            </div>
-          )}
+        <motion.form variants={FADE_UP} onSubmit={handleSubmit} className="flex-col gap-5">
+          <AnimatePresence mode="popLayout">
+            {mode === "signUp" && (
+              <motion.div key="name" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className="input-wrap">
+                <label className="input-label">Full Name</label>
+                <input className="input" placeholder="Alex Chen" required
+                  value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} />
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           <div className="input-wrap">
             <label className="input-label">Email</label>
@@ -63,31 +76,31 @@ export default function Login() {
               <input type={showPassword ? "text" : "password"} className="input" placeholder="••••••••" required
                 value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} />
               <button type="button" onClick={() => setShowPassword(!showPassword)}
-                style={{ position: "absolute", right: 12, top: 10, background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}>
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                style={{ position: "absolute", right: 14, top: 14, background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          {error && <div className="p-3 t-sm rounded-md" style={{ background: "transparent", color: "var(--fat)", border: "1px solid var(--fat)", opacity: 0.9 }}>{error}</div>}
+          {error && <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} className="p-3 t-sm rounded-md" style={{ background: "rgba(155, 122, 117, 0.1)", color: "var(--fat)", border: "1px solid rgba(155, 122, 117, 0.2)" }}>{error}</motion.div>}
 
-          <div style={{ padding: 12, borderRadius: "var(--r-sm)", border: "1px solid var(--border)", fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: 4 }}>
-            <span>Demo: </span> <span style={{ color: "var(--text)" }}>admin@nutri.com</span> / <span style={{ color: "var(--text)" }}>password</span>
+          <div style={{ padding: 12, borderRadius: "var(--r-sm)", border: "1px solid var(--border-dark)", fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: 4, background: "var(--surface-solid)" }}>
+            <span style={{ fontWeight: 600 }}>Demo Credentials:</span> <span style={{ color: "var(--text)" }}>admin@nutri.com</span> / <span style={{ color: "var(--text)" }}>password</span>
           </div>
 
-          <button type="submit" className="btn btn-primary btn-lg w-full mt-2" disabled={loading}>
-            {loading ? "Processing..." : mode === "login" ? "Sign In" : "Continue"}
+          <button type="submit" className="btn btn-primary btn-lg w-full mt-4" disabled={loading}>
+            {loading ? "Authenticating..." : mode === "login" ? "Enter Dashboard" : "Create Account"}
           </button>
-        </form>
+        </motion.form>
 
-        <p className="text-center t-sm mt-8">
-          {mode === "login" ? "Don't have an account? " : "Already have an account? "}
-          <span className="text-text hover:text-primary transition-colors cursor-pointer" onClick={() => setMode(mode === "login" ? "signUp" : "login")}>
-            {mode === "login" ? "Sign up" : "Sign in"}
+        <motion.p variants={FADE_UP} className="text-center t-sm mt-8">
+          {mode === "login" ? "No account? " : "Already registered? "}
+          <span className="text-text hover:text-primary transition-colors cursor-pointer" style={{ fontWeight: 500 }} onClick={() => setMode(mode === "login" ? "signUp" : "login")}>
+            {mode === "login" ? "Begin here." : "Sign in here."}
           </span>
-        </p>
+        </motion.p>
 
-      </div>
+      </motion.div>
     </div>
   );
 }
