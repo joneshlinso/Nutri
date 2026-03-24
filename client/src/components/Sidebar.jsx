@@ -19,38 +19,36 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       {/* ─── Logo ─── */}
-      <div className="flex items-center gap-3 mb-8 px-2">
-        <div style={{ width: 36, height: 36, borderRadius: 12, background: "var(--accent-cta)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Apple size={20} color="#FFF" />
-        </div>
-        <h2 className="t-h3" style={{ color: "var(--text)", fontWeight: 700 }}>NutriPlanner</h2>
+      <div className="brand" style={{ marginBottom: 48, marginTop: 16 }}>
+        <span className="brand-name">Nutrire</span>
+        <span className="brand-sub">Daily Wellness Journal</span>
       </div>
 
       {/* ─── Log CTA ─── */}
-      <NavLink to="/log" className="btn btn-cta btn-w-full mb-8 fade-up" style={{ justifyContent: "center", gap: 8 }}>
-        <Plus size={18} />
+      <NavLink to="/log" className="cta-btn" style={{ justifyContent: "center", marginBottom: 32, width: '100%' }}>
+        <Plus size={14} />
         Log Meal
       </NavLink>
 
       {/* ─── Nav Items ─── */}
-      <nav className="flex-col gap-2" style={{ flex: 1 }}>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
         {NAV_LINKS.map(({ path, label, icon: Icon }) => (
           <NavLink key={path} to={path} className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <Icon size={20} />
+            <Icon size={18} />
             <span>{label}</span>
           </NavLink>
         ))}
       </nav>
 
       {/* ─── Profile ─── */}
-      <div style={{ borderTop: "none", paddingTop: "var(--sp-5)" }}>
+      <div style={{ marginTop: 'auto', paddingTop: 24, borderTop: '1px solid var(--ink-10)' }}>
         <NavLink to="/profile" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--primary-light)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "var(--accent-cta)" }}>
+          <div style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: '0.6rem', fontWeight: 600, color: "var(--cream)" }}>
             {initials}
           </div>
-          <span className="t-sm-med" style={{ flex: 1 }}>{user.name?.split(" ")[0]}</span>
+          <span style={{ flex: 1 }}>{user.name?.split(" ")[0]}</span>
         </NavLink>
-        <button onClick={logout} className="nav-item mt-2" style={{ color: "var(--text-muted)" }}>
+        <button onClick={logout} className="nav-item">
           <LogOut size={18} />
           <span>Sign Out</span>
         </button>

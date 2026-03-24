@@ -34,53 +34,53 @@ export default function Planner() {
 
   return (
     <main className="page-content">
-      <div className="flex justify-between items-center mb-6 fade-up">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="t-h1">Weekly Planner</h1>
-          <p className="t-body mt-1">Your nutritional schedule for the week.</p>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.8rem", fontWeight: 300, color: "var(--ink)", letterSpacing: "-0.01em", lineHeight: 1 }}>Weekly Planner</h1>
+          <p style={{ fontSize: "0.85rem", letterSpacing: "0.05em", color: "var(--ink-60)", textTransform: "uppercase", marginTop: 8 }}>Your nutritional schedule layout.</p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 card" style={{ padding:"8px 16px" }}>
-            <button className="btn-icon" style={{ width:32,height:32,background:"transparent",boxShadow:"none" }}><ChevronLeft size={16}/></button>
-            <span className="t-sm-med">Oct 16 – 22</span>
-            <button className="btn-icon" style={{ width:32,height:32,background:"transparent",boxShadow:"none" }}><ChevronRight size={16}/></button>
+          <div className="flex items-center gap-3" style={{ background: "#FFFFFF", padding: "8px 16px", borderRadius: 2, border: "var(--border)", boxShadow: "var(--shadow-card)" }}>
+            <button style={{ width: 32, height: 32, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-60)" }}><ChevronLeft size={16}/></button>
+            <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--ink)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Oct 16 – 22</span>
+            <button style={{ width: 32, height: 32, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-60)" }}><ChevronRight size={16}/></button>
           </div>
-          <button className="btn btn-cta" onClick={generate} disabled={generating}>
-            {generating ? "Generating..." : "✨ Auto-fill"}
+          <button className="cta-btn" onClick={generate} disabled={generating} style={{ height: 50 }}>
+            {generating ? "Curating..." : "✨ Auto-fill"}
           </button>
         </div>
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(7, 1fr)", gap:"var(--sp-3)", minHeight:"calc(100vh - 200px)" }} className="fade-up fade-up-1">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 16, minHeight: "calc(100vh - 200px)" }}>
         {DAYS.map((day, idx) => {
           const meals = plan[day];
           const isToday = day === "Wed";
           const totalCal = meals.reduce((s,m)=>s+m.cal, 0);
 
           return (
-            <div key={day} className="card flex-col p-4"
-              style={{ background: isToday ? "var(--primary-light)" : "var(--surface)" }}>
-              <div className="text-center pb-4 mb-4" style={{ borderBottom:"1px solid var(--bg-alt)" }}>
-                <p className="t-xs">{day}</p>
-                <p className="t-sm-med mt-1" style={{ color: isToday?"var(--accent-cta)":"var(--text-secondary)" }}>{totalCal}</p>
+            <div key={day} style={{ display: "flex", flexDirection: "column", padding: 20, background: isToday ? "var(--sage-pale)" : "#FFFFFF", border: isToday ? "1px solid var(--sage)" : "var(--border)", borderRadius: 2, boxShadow: "var(--shadow-card)" }}>
+              <div className="text-center pb-4 mb-4" style={{ borderBottom: isToday ? "1px solid var(--sage)" : "1px solid var(--ink-10)" }}>
+                <p style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: isToday ? "var(--sage)" : "var(--ink-60)" }}>{day}</p>
+                <p style={{ fontSize: "1.4rem", fontFamily: "'Cormorant Garamond', serif", fontWeight: 400, marginTop: 4, color: isToday ? "var(--ink)" : "var(--ink-60)" }}>{totalCal}</p>
+                <p style={{ fontSize: "0.55rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-30)" }}>kcal</p>
               </div>
 
-              <div className="flex-col gap-3" style={{ flex:1 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
                 <AnimatePresence>
                   {meals.map(meal => (
-                    <motion.div key={meal.id} initial={{opacity:0,scale:0.9}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.85}} transition={{duration:0.35, ease:[0.34,1.56,0.64,1]}}
-                      className="relative group card-inset" style={{ padding:"10px 12px", borderRadius:"var(--r-md)" }}>
-                      <div className="t-xs mb-1">{meal.type}</div>
-                      <div className="t-sm-med" style={{ lineHeight:1.3 }}>{meal.emoji} {meal.name}</div>
-                      <div className="t-xs mt-1 text-muted">{meal.cal} kcal</div>
-                      <button onClick={()=>remove(day,meal.id)} style={{ position:"absolute", top:-8,right:-8, width:22,height:22, borderRadius:"50%", background:"var(--surface)", border:"none", cursor:"pointer", display:"none", color:"#c04040", fontSize:14, alignItems:"center",justifyContent:"center" }} className="group-hover:flex">
+                    <motion.div key={meal.id} initial={{opacity:0, y: 10}} animate={{opacity:1, y: 0}} exit={{opacity:0, scale:0.9}} transition={{duration:0.4, ease:[0.22,1,0.36,1]}}
+                      style={{ position: "relative", padding: "14px", background: "#FFFFFF", border: "1px solid var(--ink-10)", borderRadius: 2, boxShadow: "0 2px 10px rgba(26,22,18,.03)" }}>
+                      <div style={{ fontSize: "0.55rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-60)", marginBottom: 6 }}>{meal.type}</div>
+                      <div style={{ fontSize: "0.95rem", fontWeight: 500, color: "var(--ink)", lineHeight: 1.3 }}>{meal.emoji} {meal.name}</div>
+                      <div style={{ fontSize: "0.75rem", fontFamily: "'Cormorant Garamond', serif", fontStyle: "italic", marginTop: 4, color: "var(--ink-60)" }}>{meal.cal} kcal</div>
+                      <button onClick={()=>remove(day,meal.id)} style={{ position: "absolute", top: -8, right: -8, width: 24, height: 24, borderRadius: "50%", background: "#FFFFFF", border: "1px solid var(--ink-10)", cursor: "pointer", color: "#c04040", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.7 }}>
                         ×
                       </button>
                     </motion.div>
                   ))}
                 </AnimatePresence>
 
-                <button className="btn btn-ghost btn-w-full" style={{ border:"1px dashed var(--bg-alt)", borderRadius:"var(--r-md)", justifyContent:"center", padding:"10px" }}>
+                <button style={{ border: "1px dashed var(--ink-30)", background: "transparent", color: "var(--ink-60)", borderRadius: 2, display: "flex", justifyContent: "center", alignItems: "center", padding: 14, cursor: "pointer", width: "100%", transition: "all 0.2s" }} onMouseOver={e => { e.currentTarget.style.borderColor = "var(--gold)"; e.currentTarget.style.color = "var(--gold)"; }} onMouseOut={e => { e.currentTarget.style.borderColor = "var(--ink-30)"; e.currentTarget.style.color = "var(--ink-60)"; }}>
                   <Plus size={16}/>
                 </button>
               </div>

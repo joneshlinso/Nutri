@@ -23,9 +23,9 @@ const STATS = [
 const SoftTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="card" style={{ padding:"12px 16px", borderRadius:"var(--r-md)" }}>
-      <p className="t-xs mb-2">{label}</p>
-      {payload.map((p,i) => <p key={i} className="t-sm-med">{p.name}: <span style={{color:"var(--accent-cta)"}}>{p.value}</span></p>)}
+    <div style={{ background: "#FFF", padding: "12px 16px", borderRadius: 2, border: "1px solid rgba(184,146,74,.2)", boxShadow: "0 4px 20px rgba(26,22,18,.08)" }}>
+      <p style={{ fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-60)", marginBottom: 8 }}>{label}</p>
+      {payload.map((p,i) => <p key={i} style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--ink)" }}>{p.name}: <span style={{color:"var(--gold)"}}>{p.value}</span></p>)}
     </div>
   );
 };
@@ -35,55 +35,55 @@ const FADE = (delay=0) => ({ initial:{opacity:0,y:20}, animate:{opacity:1,y:0}, 
 export default function Progress() {
   return (
     <main className="page-content">
-      <motion.div {...FADE(0)} className="mb-6">
-        <h1 className="t-h1">Progress</h1>
-        <p className="t-body mt-1">Your health metrics over time.</p>
+      <motion.div {...FADE(0)} style={{ marginBottom: 32 }}>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.8rem", fontWeight: 300, color: "var(--ink)", letterSpacing: "-0.01em", lineHeight: 1 }}>Progress</h1>
+        <p style={{ fontSize: "0.85rem", letterSpacing: "0.05em", color: "var(--ink-60)", textTransform: "uppercase", marginTop: 8 }}>Your health metrics over time.</p>
       </motion.div>
 
-      <motion.div {...FADE(0.05)} className="grid-4 mb-6">
+      <motion.div {...FADE(0.05)} style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginBottom: 24 }}>
         {STATS.map((s,i) => (
-          <div key={i} className="card p-6 text-center card-hover">
-            <div style={{ fontSize:28, marginBottom:8 }}>{s.emoji}</div>
-            <div className="t-h2">{s.val}</div>
-            <div className="t-xs mt-2">{s.label}</div>
+          <div key={i} className="card" style={{ padding: "28px 24px", textAlign: "center", animationDelay: `${i * 80}ms` }}>
+            <div style={{ fontSize: 24, marginBottom: 12 }}>{s.emoji}</div>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.2rem", fontWeight: 300, color: "var(--ink)", lineHeight: 1 }}>{s.val}</div>
+            <div style={{ fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-60)", marginTop: 8 }}>{s.label}</div>
           </div>
         ))}
       </motion.div>
 
-      <div className="bento-grid">
-        <motion.div {...FADE(0.10)} style={{ gridColumn:"span 8" }}>
-          <div className="card p-8" style={{ height:"100%" }}>
-            <h3 className="t-h3 mb-6">Weight Trend</h3>
-            <div style={{ height:300, marginLeft:-16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 20 }}>
+        <motion.div {...FADE(0.10)} style={{ gridColumn: "span 8" }}>
+          <div className="card" style={{ padding: 32, height: "100%" }}>
+            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", fontWeight: 400, color: "var(--ink)", marginBottom: 24 }}>Weight Trend</h3>
+            <div style={{ height: 300, marginLeft: -16 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={weightData}>
                   <defs>
                     <linearGradient id="gWeight" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.25}/>
-                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="var(--gold)" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="var(--gold)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} dy={8}/>
-                  <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} domain={["dataMin-1","dataMax+1"]}/>
-                  <Tooltip content={<SoftTooltip/>} cursor={{stroke:"var(--bg-alt)",strokeWidth:2}}/>
-                  <Area type="monotone" dataKey="weight" name="Weight (kg)" stroke="var(--primary)" strokeWidth={3} fill="url(#gWeight)" animationDuration={1200}/>
+                  <XAxis dataKey="date" stroke="var(--ink-30)" fontSize={12} tickLine={false} axisLine={false} dy={8} tick={{fill: "var(--ink-60)"}}/>
+                  <YAxis stroke="var(--ink-30)" fontSize={12} tickLine={false} axisLine={false} domain={["dataMin-1","dataMax+1"]} tick={{fill: "var(--ink-60)"}}/>
+                  <Tooltip content={<SoftTooltip/>} cursor={{stroke:"var(--ink-10)",strokeWidth:2}}/>
+                  <Area type="monotone" dataKey="weight" name="Weight (kg)" stroke="var(--gold)" strokeWidth={3} fill="url(#gWeight)" animationDuration={1200}/>
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
         </motion.div>
 
-        <motion.div {...FADE(0.15)} style={{ gridColumn:"span 4" }}>
-          <div className="card p-8" style={{ height:"100%" }}>
-            <h3 className="t-h3 mb-6">Energy Balance</h3>
-            <div style={{ height:300, marginLeft:-16 }}>
+        <motion.div {...FADE(0.15)} style={{ gridColumn: "span 4" }}>
+          <div className="card" style={{ padding: 32, height: "100%" }}>
+            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", fontWeight: 400, color: "var(--ink)", marginBottom: 24 }}>Energy Balance</h3>
+            <div style={{ height: 300, marginLeft: -16 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={calorieData} barSize={12}>
-                  <XAxis dataKey="day" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} dy={8}/>
-                  <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false}/>
-                  <Tooltip content={<SoftTooltip/>} cursor={{fill:"var(--bg-alt)"}}/>
-                  <Bar dataKey="eaten" name="Consumed" fill="var(--primary)" radius={[6,6,0,0]} animationDuration={1200}/>
-                  <Bar dataKey="goal" name="Target" fill="var(--primary-light)" radius={[6,6,0,0]} animationDuration={1200}/>
+                <BarChart data={calorieData} barSize={8}>
+                  <XAxis dataKey="day" stroke="var(--ink-30)" fontSize={12} tickLine={false} axisLine={false} dy={8} tick={{fill: "var(--ink-60)"}}/>
+                  <YAxis stroke="var(--ink-30)" fontSize={12} tickLine={false} axisLine={false} tick={{fill: "var(--ink-60)"}}/>
+                  <Tooltip content={<SoftTooltip/>} cursor={{fill:"var(--ink-10)"}}/>
+                  <Bar dataKey="eaten" name="Consumed" fill="var(--slate)" radius={[2,2,0,0]} animationDuration={1200}/>
+                  <Bar dataKey="goal" name="Target" fill="var(--cream-dark)" radius={[2,2,0,0]} animationDuration={1200}/>
                 </BarChart>
               </ResponsiveContainer>
             </div>
