@@ -1,33 +1,47 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ─── Yazio-Style Soft Mint Tokens ─────────────────────────── */
+/* ─── Custom 7-Color Green Luxury Palette ───────────────────── */
+/*   #DBD76A · #A9BF52 · #78A33D · #4B872B · #266B1C · #104F17 · #083316   */
 :root {
-  /* Soft Mint Backgrounds */
-  --bg:             #EEF3EE; /* Soft mint/grey-green base */
-  --bg-alt:         #E6EDE6; /* Slightly deeper trough */
-  --surface:        #F4F8F4; /* Card surface — slightly elevated */
-  --surface-inset:  #E4EAE4; /* Inset / search bar surface */
+  /* ── TIER 1: Surfaces (lightest 2) ─────────────────────────── */
+  --g1: #DBD76A; /* Warm yellow-green — highlight tint */
+  --g2: #A9BF52; /* Soft lime green — hover/active fills */
 
-  /* Neumorphism-Lite Shadows */
-  --shadow-outer:   4px 4px 12px rgba(180, 200, 180, 0.5), -4px -4px 12px rgba(255, 255, 255, 0.9);
-  --shadow-inset:   inset 3px 3px 8px rgba(180, 200, 180, 0.5), inset -3px -3px 8px rgba(255, 255, 255, 0.8);
-  --shadow-float:   6px 6px 20px rgba(150, 180, 150, 0.3), -4px -4px 16px rgba(255, 255, 255, 0.95);
+  /* ── TIER 2: Primary UI (middle 2) ─────────────────────────── */
+  --g3: #78A33D; /* Mid green — primary bars, icons, chips */
+  --g4: #4B872B; /* Richer green — buttons, progress fills */
 
-  /* Soft Typography */
-  --text:           #1E2822; /* Near-black, forest-tinted */
-  --text-secondary: #7A8C7A; /* Muted sage grey */
-  --text-muted:     #A8B8A8; /* Ultra-muted */
+  /* ── TIER 3: Depth / Text / Accents (darkest 3) ────────────── */
+  --g5: #266B1C; /* Dark green — CTA buttons, active nav */
+  --g6: #104F17; /* Deep forest — display text, dark headers */
+  --g7: #083316; /* Near-black green — deepest text, sidebar base */
 
-  /* Green Accent System */
-  --primary:        #5A8C5A; /* Desaturated green */
-  --primary-light:  #D4E8D4; /* Very soft green tint */
-  --accent:         #3D7A3D; /* CTA green (slightly richer) */
-  --accent-cta:     #2E6B2E; /* Darkest CTA for pill buttons */
+  /* ── Semantic Aliases (all components reference these) ──────── */
+  --bg:             #F0F3E8; /* Off-white with a g1 warmth hint */
+  --bg-alt:         #E5EAD8; /* Slightly deeper warm-green trough */
+  --surface:        #FAFCF5; /* Card surface — bright, g1-tinted white */
+  --surface-inset:  #DDE5CA; /* Inset / search bar — g2-derivation */
 
-  /* Macro Colors (soft, pastel-ish) */
-  --protein:        #78A8D8; /* Muted blue */
-  --carbs:          #E88C5A; /* Muted orange */
-  --fat:            #D4A44C; /* Muted amber */
+  /* Neumorphism-Lite Shadows — now warm yellow-green light source */
+  --shadow-outer:   4px 4px 14px rgba(120, 163, 61, 0.22), -4px -4px 12px rgba(255, 255, 240, 0.95);
+  --shadow-inset:   inset 3px 3px 8px rgba(120, 163, 61, 0.20), inset -3px -3px 8px rgba(255, 255, 240, 0.85);
+  --shadow-float:   6px 6px 24px rgba(75, 135, 43, 0.22), -4px -4px 16px rgba(255, 255, 240, 0.98);
+
+  /* Typography — taken directly from depth tier */
+  --text:           #083316; /* g7 — near-black green for max legibility */
+  --text-secondary: #266B1C; /* g5 — readable dark green body text */
+  --text-muted:     #78A33D; /* g3 — muted labels and placeholders */
+
+  /* Green Accent System — directly from palette tiers */
+  --primary:        #78A33D; /* g3 — mid-green bars, icons, active elements */
+  --primary-light:  #D9EBBB; /* g2-tinted tint — chip/badge backgrounds */
+  --accent:         #4B872B; /* g4 — hover / secondary CTA */
+  --accent-cta:     #266B1C; /* g5 — primary CTA pill buttons */
+
+  /* Macro Colors (warm earth tones — harmonized with yellow-green base) */
+  --protein:        #5A8FC4; /* Muted blue — contrasts cleanly */
+  --carbs:          #C4873A; /* Warm amber-orange — analogous warmth */
+  --fat:            #B8A030; /* Warm yellow — pulls from g1 */
 
   /* Geometry */
   --r-sm:   12px;
@@ -119,7 +133,7 @@ button, input, select { font-family:inherit; outline:none; }
   background:var(--primary-light); color:var(--accent-cta);
   box-shadow: none;
 }
-.btn-primary-light:hover { background:#C5DEC5; }
+.btn-primary-light:hover { background:#C5D99E; } /* g2-derived warm hover */
 
 .btn-ghost { background:transparent; color:var(--text-secondary); }
 .btn-ghost:hover { color:var(--text); background:var(--surface-inset); }
