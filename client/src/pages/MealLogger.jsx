@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../api/axiosInstance";
 import { Search, SlidersHorizontal, Plus, Heart, ChevronRight, Trash2, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -42,17 +43,68 @@ export default function MealLogger() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(FOODS[0]);
   const [qty, setQty] = useState(1);
-  const [log, setLog] = useState([]);
+  const [meals, setMeals] = useState([]); // Database logs
   const [saved, setSaved] = useState(false);
   const [liked, setLiked] = useState(new Set([1]));
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLog = async () => {
+      try {
+        const res = await api.get('/logs/day');
+        setMeals(res.data.meals || []);
+      } catch (err) {
+        console.error("Error fetching logs:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLog();
+  }, []);
 
   const filtered = FOODS.filter(f =>
     (active === "All" || f.type === active) &&
     f.name.toLowerCase().includes(search.toLowerCase())
   );
-  const total = log.reduce((a, i) => ({ cal:a.cal+i.cal*i.qty, p:a.p+i.p*i.qty, c:a.c+i.c*i.qty, f:a.f+i.f*i.qty }), { cal:0, p:0, c:0, f:0 });
-  const add = () => { if (!selected) return; setLog([...log, { ...selected, qty, key: Date.now() }]); setQty(1); };
-  const save = () => { setSaved(true); setTimeout(() => setSaved(false), 2200); };
+
+  const total = meals.reduce((a, i) => ({ 
+    cal: a.cal + (i.calories || 0), 
+    p: a.p + (i.protein || 0), 
+    c: a.c + (i.carbs || 0), 
+    f: a.f + (i.fat || 0) 
+  }), { cal: 0, p: 0, c: 0, f: 0 });
+
+  const add = async () => { 
+    if (!selected) return;
+    try {
+      const mealData = {
+        name: selected.name,
+        type: selected.type || "Breakfast",
+        calories: Math.round(selected.cal * qty),
+        protein: Math.round(selected.p * qty),
+        carbs: Math.round(selected.c * qty),
+        fat: Math.round(selected.f * qty),
+        emoji: selected.emoji
+      };
+      
+      const res = await api.post('/logs/meal', mealData);
+      setMeals(res.data.meals);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      setQty(1);
+    } catch (err) {
+      console.error("Error adding meal:", err);
+    }
+  };
+
+  const remove = async (mealId) => {
+    try {
+      const res = await api.delete(`/logs/meal/${mealId}`);
+      setMeals(res.data.meals);
+    } catch (err) {
+      console.error("Error deleting meal:", err);
+    }
+  };
 
   return (
     <main className="page-content">
@@ -222,8 +274,9 @@ export default function MealLogger() {
                     <span style={{ fontWeight: 500, minWidth: 32, textAlign: "center" }}>{qty}</span>
                     <button onClick={() => setQty(qty + 0.5)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1.2rem", color: "var(--text)", lineHeight: 1, width: 28, display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
                   </div>
-                  <button onClick={add} style={{ flex: 1, padding: "14px", background: "var(--ink)", color: "#FFFFFF", border: "none", borderRadius: 2, fontWeight: 500, fontSize: ".9375rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                    <Plus size={18} /> Add Entry
+                  <button onClick={add} disabled={saved} style={{ flex: 1, padding: "14px", background: "var(--ink)", color: "#FFFFFF", border: "none", borderRadius: 2, fontWeight: 500, fontSize: ".9375rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    {saved ? <Check size={18} /> : <Plus size={18} />}
+                    {saved ? "Logged!" : "Add Entry"}
                   </button>
                 </div>
               </motion.div>
@@ -236,34 +289,31 @@ export default function MealLogger() {
               <h3 style={{ fontFamily: "\'Cormorant Garamond\', serif", fontSize: "1.4rem", fontWeight: 400, color: "var(--ink)" }}>Today's Log</h3>
               <span style={{ fontWeight: 500, color: "var(--ink)", fontSize: "1rem" }}>{Math.round(total.cal)} <span style={{ fontSize: "0.75rem", color: "var(--ink-60)" }}>kcal</span></span>
             </div>
-            {log.length === 0 ? (
+            {meals.length === 0 ? (
               <div style={{ padding: "32px 20px", textAlign: "center", background: "#FFFFFF", border: "1px solid rgba(184,146,74,.1)", borderRadius: 2 }}>
                 <span style={{ fontSize: 32 }}>🍽️</span>
-                <p className="t-body mt-3">Nothing logged yet</p>
+                <p className="t-body mt-3">{loading ? "Loading journal..." : "Nothing logged yet"}</p>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <AnimatePresence>
-                  {log.map((item, i) => (
-                    <motion.div key={item.key} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.93 }}
+                  {meals.map((item, i) => (
+                    <motion.div key={item._id || i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.93 }}
                       transition={{ duration: 0.35, ease: [0.34, 1.56, 0.64, 1] }}
-                      style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#FFFFFF", border: "1px solid rgba(184,146,74,.1)", borderRadius: 2, borderBottom: i < log.length - 1 ? "none" : "none" }}>
+                      style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#FFFFFF", border: "1px solid rgba(184,146,74,.1)", borderRadius: 2 }}>
                       <div>
                         <div style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--ink)" }}>{item.emoji} {item.name}</div>
-                        <div className="t-sm mt-1" style={{ color: "var(--text-muted)" }}>{item.qty} × {item.desc}</div>
+                        <div className="t-sm mt-1" style={{ color: "var(--text-muted)" }}>{item.type}</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontWeight: 500, color: "var(--ink)", fontSize: ".9rem" }}>{Math.round(item.cal * item.qty)}</span>
-                        <button onClick={() => setLog(l => l.filter(x => x.key !== item.key))} style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(220,76,76,0.1)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#C04040" }}>
+                        <span style={{ fontWeight: 500, color: "var(--ink)", fontSize: ".9rem" }}>{Math.round(item.calories)}</span>
+                        <button onClick={() => remove(item._id)} style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(220,76,76,0.1)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#C04040" }}>
                           <Trash2 size={13} />
                         </button>
                       </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
-                <button onClick={save} disabled={saved} style={{ padding: "14px", marginTop: 4, background: saved ? "var(--cream-dark)" : "var(--ink)", color: saved ? "var(--ink)" : "#FFFFFF", border: "none", borderRadius: 2, fontWeight: 500, fontSize: ".9375rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                  {saved ? <><Check size={18} /> Logged!</> : "Save Meal"}
-                </button>
               </div>
             )}
           </div>

@@ -1,17 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axiosInstance';
 
 export default function Home() {
   const { user } = useAuth();
-  const [water, setWater] = useState(5);
+  const [log, setLog] = useState(null);
+  const [goals, setGoals] = useState({ calories: 2000, protein: 150, carbs: 250, fat: 70 });
   const [greeting, setGreeting] = useState("Good morning");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const h = new Date().getHours();
     if (h >= 12 && h < 17) setGreeting("Good afternoon");
     else if (h >= 17) setGreeting("Good evening");
+
+    const fetchData = async () => {
+      try {
+        const [logRes, goalsRes] = await Promise.all([
+          api.get('/logs/day'),
+          api.get('/goals')
+        ]);
+        setLog(logRes.data);
+        setGoals(goalsRes.data);
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
+
+  const handleWaterClick = async (count) => {
+    try {
+      const res = await api.patch('/logs/water', { waterCups: count });
+      setLog(prev => ({ ...prev, waterCups: res.data.waterCups }));
+    } catch (err) {
+      console.error("Error updating water:", err);
+    }
+  };
+
+  const consumed = log?.meals?.reduce((sum, m) => sum + (m.calories || 0), 0) || 0;
+  const remaining = Math.max(0, goals.calories - consumed);
+  const pPct = Math.min(100, Math.round((consumed / goals.calories) * 100)) || 0;
+  
+  const totalP = log?.meals?.reduce((sum, m) => sum + (m.protein || 0), 0) || 0;
+  const totalC = log?.meals?.reduce((sum, m) => sum + (m.carbs || 0), 0) || 0;
+  const totalF = log?.meals?.reduce((sum, m) => sum + (m.fat || 0), 0) || 0;
+
+  if (loading) return <div className="shell" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', color: 'var(--ink-60)' }}>Curating your wellness journal...</div>;
 
   return (
     <div className="shell">
@@ -49,7 +87,7 @@ export default function Home() {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
       </div>
       <div className="stat-eyebrow">Remaining</div>
-      <div className="stat-value">710</div>
+      <div className="stat-value">{remaining.toLocaleString()}</div>
       <div className="stat-unit">kcal today</div>
     </div>
 
@@ -59,7 +97,7 @@ export default function Home() {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2z"/><path d="M12 6v6l4 2"/></svg>
       </div>
       <div className="stat-eyebrow">Consumed</div>
-      <div className="stat-value">1,420</div>
+      <div className="stat-value">{consumed.toLocaleString()}</div>
       <div className="stat-unit">kcal today</div>
     </div>
 
@@ -85,10 +123,10 @@ export default function Home() {
           <circle cx="90" cy="90" r="70" fill="none" stroke="rgba(248,244,238,.1)" strokeWidth="8"
             transform="rotate(-90 90 90)"/>
           {/* fill */}
-          <circle cx="90" cy="90" r="70" fill="none" stroke="url(#ringGrad)" strokeWidth="8"
+            <circle cx="90" cy="90" r="70" fill="none" stroke="url(#ringGrad)" strokeWidth="8"
             strokeLinecap="butt"
             className="ring-arc"
-            style={{ '--offset': 'calc(408 - 408 * 0.768)' }}
+            style={{ '--offset': `calc(439.8 - 439.8 * ${pPct / 100})` }}
             transform="rotate(-90 90 90)"/>
           {/* gold tick marks */}
           <defs>
@@ -99,13 +137,13 @@ export default function Home() {
           </defs>
         </svg>
         <div className="ring-center">
-          <div className="ring-pct">77%</div>
+          <div className="ring-pct">{pPct}%</div>
           <div className="ring-of">of goal</div>
         </div>
       </div>
       <div className="divider"></div>
       <div style={{ textAlign: 'center' }}>
-        <div className="ring-goal">1,850 kcal</div>
+        <div className="ring-goal">{goals.calories.toLocaleString()} kcal</div>
         <div className="ring-goal-label">Daily Goal</div>
       </div>
     </div>
@@ -116,12 +154,12 @@ export default function Home() {
         <div>
           <div className="card-title">Macronutrient Progress</div>
         </div>
-        <div className="card-meta">1,420 / 1,850 kcal</div>
+        <div className="card-meta">{consumed.toLocaleString()} / {goals.calories.toLocaleString()} kcal</div>
       </div>
 
       {/* Main bar */}
       <div className="main-bar-track">
-        <div className="main-bar-fill" style={{ '--w': '76.8%' }}></div>
+        <div className="main-bar-fill" style={{ '--w': `${pPct}%` }}></div>
       </div>
 
       {/* Macros */}
@@ -130,30 +168,30 @@ export default function Home() {
         <div>
           <div className="macro-label">
             <span className="macro-name">🌾  Carbohydrates</span>
-            <span className="macro-vals">162 / 232g</span>
+            <span className="macro-vals">{Math.round(totalC)} / {goals.carbs}g</span>
           </div>
           <div className="macro-track">
-            <div className="macro-fill" style={{ background: 'var(--rust)', '--w': '69.8%', animationDelay: '.5s' }}></div>
+            <div className="macro-fill" style={{ background: 'var(--rust)', '--w': `${Math.min(100, (totalC / goals.carbs) * 100)}%`, animationDelay: '.5s' }}></div>
           </div>
         </div>
         {/* Protein */}
         <div>
           <div className="macro-label">
             <span className="macro-name">💪  Protein</span>
-            <span className="macro-vals">88 / 143g</span>
+            <span className="macro-vals">{Math.round(totalP)} / {goals.protein}g</span>
           </div>
           <div className="macro-track">
-            <div className="macro-fill" style={{ background: 'var(--slate)', '--w': '61.5%', animationDelay: '.58s' }}></div>
+            <div className="macro-fill" style={{ background: 'var(--slate)', '--w': `${Math.min(100, (totalP / goals.protein) * 100)}%`, animationDelay: '.58s' }}></div>
           </div>
         </div>
         {/* Fat */}
         <div>
           <div className="macro-label">
             <span className="macro-name">🥑  Fat</span>
-            <span className="macro-vals">45 / 58g</span>
+            <span className="macro-vals">{Math.round(totalF)} / {goals.fat}g</span>
           </div>
           <div className="macro-track">
-            <div className="macro-fill" style={{ background: 'var(--gold)', '--w': '77.6%', animationDelay: '.66s' }}></div>
+            <div className="macro-fill" style={{ background: 'var(--gold)', '--w': `${Math.min(100, (totalF / goals.fat) * 100)}%`, animationDelay: '.66s' }}></div>
           </div>
         </div>
       </div>
@@ -174,34 +212,22 @@ export default function Home() {
         </Link>
       </div>
       <div className="meals-list">
-
-        <div className="meal-row" style={{ animationDelay: '.35s' }}>
-          <div className="meal-icon">🥣</div>
-          <div className="meal-info">
-            <div className="meal-name">Breakfast</div>
-            <div className="meal-foods">Oatmeal &amp; Wild Berries</div>
+        {log?.meals?.length > 0 ? (
+          log.meals.map((meal, idx) => (
+            <div key={meal._id || idx} className="meal-row" style={{ animationDelay: `${0.35 + idx * 0.07}s` }}>
+              <div className="meal-icon">{meal.emoji || '🍽️'}</div>
+              <div className="meal-info">
+                <div className="meal-name">{meal.type}</div>
+                <div className="meal-foods">{meal.name}</div>
+              </div>
+              <div><span className="meal-cal">{meal.calories}</span><span className="meal-cal-unit">kcal</span></div>
+            </div>
+          ))
+        ) : (
+          <div className="meal-row" style={{ color: 'var(--ink-30)', justifyContent: 'center', padding: '32px' }}>
+            No entries for today yet.
           </div>
-          <div><span className="meal-cal">420</span><span className="meal-cal-unit">kcal</span></div>
-        </div>
-
-        <div className="meal-row" style={{ animationDelay: '.42s' }}>
-          <div className="meal-icon">🥗</div>
-          <div className="meal-info">
-            <div className="meal-name">Lunch</div>
-            <div className="meal-foods">Grilled Chicken Salad</div>
-          </div>
-          <div><span className="meal-cal">580</span><span className="meal-cal-unit">kcal</span></div>
-        </div>
-
-        <div className="meal-row" style={{ animationDelay: '.49s' }}>
-          <div className="meal-icon">🐟</div>
-          <div className="meal-info">
-            <div className="meal-name">Dinner</div>
-            <div className="meal-foods">Salmon &amp; Sweet Potato</div>
-          </div>
-          <div><span className="meal-cal">420</span><span className="meal-cal-unit">kcal</span></div>
-        </div>
-
+        )}
       </div>
     </div>
 
@@ -209,15 +235,15 @@ export default function Home() {
     <div className="card hydration-card">
       <div className="card-heading" style={{ marginBottom: '0' }}>
         <div className="card-title">Hydration</div>
-        <div className="card-meta" id="waterCount">5 / 8 cups</div>
+        <div className="card-meta" id="waterCount">{log?.waterCups || 0} / 8 cups</div>
       </div>
 
       <div className="water-grid" id="waterGrid">
         {[...Array(8)].map((_, i) => (
           <button
             key={i}
-            onClick={() => setWater(i + 1)}
-            className={`water-cup ${i < water ? 'filled' : ''}`}
+            onClick={() => handleWaterClick(i + 1)}
+            className={`water-cup ${(log?.waterCups || 0) > i ? 'filled' : ''}`}
             style={{ animationDelay: `${0.4 + i * 0.04}s` }}
           />
         ))}
@@ -225,8 +251,8 @@ export default function Home() {
 
       <div className="hydration-goal">
         <span className="hydration-goal-text" id="hydroGoalText">
-          {8 - water > 0 
-            ? <>🎯 &nbsp;<strong>{8 - water} more cup{8 - water > 1 ? 's' : ''}</strong> to reach your goal</>
+          {8 - (log?.waterCups || 0) > 0 
+            ? <>🎯 &nbsp;<strong>{8 - (log?.waterCups || 0)} more cup{8 - (log?.waterCups || 0) > 1 ? 's' : ''}</strong> to reach your goal</>
             : <>✨ &nbsp;<strong>Goal reached!</strong> Beautifully done.</>
           }
         </span>
