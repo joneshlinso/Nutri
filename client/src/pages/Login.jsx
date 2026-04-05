@@ -38,7 +38,7 @@ export default function Login() {
             <Sparkles size={24} style={{ color: "var(--ink)" }} />
           </div>
           <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.4rem", fontWeight: 300, color: "var(--ink)", letterSpacing: "-0.01em", lineHeight: 1, marginBottom: 8 }}>
-            {mode === "login" ? "Welcome Back" : "Join Nutrire"}
+            {mode === "login" ? "Welcome Back" : "Create Account"}
           </h1>
           <p style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-60)" }}>
             {mode === "login" ? "Daily Wellness Journal" : "Elevate your health journey."}
@@ -73,12 +73,14 @@ export default function Login() {
           )}
 
           {/* Demo hint */}
-          <div style={{ padding: "16px", borderRadius: 2, background: "var(--cream-dark)", fontSize: "0.8rem", textAlign: "center", border: "1px solid rgba(184,146,74,.2)" }}>
-            <span style={{ color: "var(--ink-60)" }}>Demo credentials: </span>
-            <span style={{ color: "var(--ink)", fontWeight: 500, fontFamily: "monospace" }}>admin@nutri.com</span>
-            <span style={{ color: "var(--ink-60)" }}> / </span>
-            <span style={{ color: "var(--ink)", fontWeight: 500, fontFamily: "monospace" }}>password</span>
-          </div>
+          {mode === "login" && (
+            <div style={{ padding: "16px", borderRadius: 2, background: "var(--cream-dark)", fontSize: "0.8rem", textAlign: "center", border: "1px solid rgba(184,146,74,.2)" }}>
+              <span style={{ color: "var(--ink-60)" }}>Demo credentials: </span>
+              <span style={{ color: "var(--ink)", fontWeight: 500, fontFamily: "monospace" }}>admin@nutri.com</span>
+              <span style={{ color: "var(--ink-60)" }}> / </span>
+              <span style={{ color: "var(--ink)", fontWeight: 500, fontFamily: "monospace" }}>password</span>
+            </div>
+          )}
 
           <button type="submit" disabled={loading} className="cta-btn" style={{ marginTop: 8, padding: "16px", width: "100%", justifyContent: "center", fontSize: "0.8rem" }}>
             {loading ? "Authenticating..." : mode==="login" ? "Sign In" : "Create Account"}
@@ -88,7 +90,7 @@ export default function Login() {
         <p style={{ textAlign: "center", fontSize: "0.85rem", marginTop: 32, color: "var(--ink-60)" }}>
           {mode==="login" ? "Don't have an account? " : "Already a member? "}
           <span style={{ color: "var(--gold)", cursor: "pointer", fontWeight: 600, borderBottom: "1px solid transparent", transition: "all 0.2s" }} onClick={(e)=>{ setMode(mode==="login"?"signUp":"login"); e.target.style.borderBottomColor = "var(--gold)"; }} onMouseOut={e=>e.target.style.borderBottomColor="transparent"}>
-            {mode==="login" ? "Request Access" : "Sign In"}
+            {mode==="login" ? "Sign Up" : "Sign In"}
           </span>
         </p>
 

@@ -21,36 +21,27 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    // ─── Demo Bypass ─────────────────────────────────────────
-    if (email === "admin@nutri.com" && password === "password") {
-      const mockUser = { id: "demo-123", name: "Demo User", email: "admin@nutri.com" };
-      localStorage.setItem("token", "mock-token-123");
-      setUser(mockUser);
-      return mockUser;
-    }
-
     try {
       const res = await loginUser({ email, password });
-      localStorage.setItem("token", res.data.token);
-      setUser(res.data);
-      return res.data;
+      const { token, user } = res.data;
+      localStorage.setItem("token", token);
+      setUser(user);
+      return user;
     } catch (err) {
-      // If backend is down, we can still allow demo login for UI testing
-      if (email === "test@test.com") {
-        const testUser = { id: "test-456", name: "Test User", email: "test@test.com" };
-        localStorage.setItem("token", "mock-token-456");
-        setUser(testUser);
-        return testUser;
-      }
       throw err;
     }
   };
 
   const register = async (name, email, password) => {
-    const res = await registerUser({ name, email, password });
-    localStorage.setItem("token", res.data.token);
-    setUser(res.data);
-    return res.data;
+    try {
+      const res = await registerUser({ name, email, password });
+      const { token, user } = res.data;
+      localStorage.setItem("token", token);
+      setUser(user);
+      return user;
+    } catch (err) {
+      throw err;
+    }
   };
 
   const logout = () => {
