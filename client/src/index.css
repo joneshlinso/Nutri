@@ -548,44 +548,53 @@
     animation-delay: 320ms;
     display: flex;
     flex-direction: column;
+    text-align: center;
   }
 
   .water-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-top: auto;
-    padding-top: 24px;
+    gap: 24px;
+    justify-items: center;
+    margin-top: 20px;
+    padding: 16px 0;
   }
 
   .water-cup {
-    aspect-ratio: 1;
+    height: 80px;
+    width: 40px;
     border: 1px solid var(--ink-10);
-    background: transparent;
+    background: rgba(26,22,18,0.02);
+    border-radius: 20px;
     cursor: pointer;
-    transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    transition: all .4s cubic-bezier(.34,1.56,.64,1);
     position: relative;
     overflow: hidden;
+    margin: 0 auto;
   }
 
   .water-cup::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: var(--slate);
+    background: linear-gradient(to bottom, var(--slate), #6C8BB8);
     transform: scaleY(0);
     transform-origin: bottom;
-    transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+    transition: transform .6s cubic-bezier(.34,1.56,.64,1);
+    border-radius: 0 0 11px 11px;
   }
 
   .water-cup.filled::after { transform: scaleY(1); }
-  .water-cup.filled { border-color: var(--slate); }
-  .water-cup:hover { transform: scale(1.08); }
+  .water-cup.filled { border-color: var(--slate); background: linear-gradient(var(--slate), #6C8BB8); }
+  .water-cup:hover { transform: translateY(-4px); border-color: var(--gold); }
 
   .hydration-goal {
-    margin-top: 18px;
-    padding: 14px;
-    background: var(--ink);
+    margin: 30px auto;
+    padding: 16px 24px;
+    width: fit-content;
+    background: var(--cream-dark);
+    border: 1px solid rgba(184,146,74,0.15);
+    border-radius: 8px;
     text-align: center;
   }
 
@@ -593,11 +602,11 @@
     font-size: .65rem;
     letter-spacing: .18em;
     text-transform: uppercase;
-    color: rgba(248,244,238,.7);
+    color: var(--ink-60);
   }
 
   .hydration-goal-text strong {
-    color: var(--gold-light);
+    color: var(--gold);
     font-weight: 500;
   }
 
@@ -758,3 +767,25 @@
 .meal-card:hover .hover-delete {
   opacity: 1;
 }
+
+  .hydration-insight {
+    margin-top: auto;
+    padding-top: 24px;
+    border-top: 1px solid var(--ink-10);
+  }
+
+  .insight-label {
+    font-size: .6rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .insight-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: .9rem;
+    line-height: 1.4;
+    color: var(--ink-60);
+  }

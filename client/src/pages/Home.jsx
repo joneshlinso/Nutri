@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosInstance';
+import VitalityPrism from '../components/VitalityPrism';
+import WellnessBloom from '../components/WellnessBloom';
+
 
 export default function Home() {
   const { user } = useAuth();
@@ -48,6 +51,10 @@ export default function Home() {
   const totalP = log?.meals?.reduce((sum, m) => sum + (m.protein || 0), 0) || 0;
   const totalC = log?.meals?.reduce((sum, m) => sum + (m.carbs || 0), 0) || 0;
   const totalF = log?.meals?.reduce((sum, m) => sum + (m.fat || 0), 0) || 0;
+
+  const pPctMacro = Math.min(100, Math.round((totalP / goals.protein) * 100)) || 0;
+  const cPctMacro = Math.min(100, Math.round((totalC / goals.carbs) * 100)) || 0;
+  const fPctMacro = Math.min(100, Math.round((totalF / goals.fat) * 100)) || 0;
 
   if (loading) return <div className="shell" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', color: 'var(--ink-60)' }}>Curating your wellness journal...</div>;
 
@@ -97,40 +104,30 @@ export default function Home() {
       </div>
     </div>
 
-    {/* Calorie Ring (spans rows) */}
-    <div className="card ring-card" style={{ '--i': '1', gridColumn: '2', gridRow: '1 / 3' }}>
-      <div className="ring-eyebrow">Daily Target</div>
-      <div className="ring-wrap">
-        <svg width="180" height="180" viewBox="0 0 180 180">
-          {/* decorative outer rings */}
-          <circle cx="90" cy="90" r="85" fill="none" stroke="rgba(248,244,238,.06)" strokeWidth="1"/>
-          <circle cx="90" cy="90" r="78" fill="none" stroke="rgba(184,146,74,.12)" strokeWidth="1"/>
-          {/* track */}
-          <circle cx="90" cy="90" r="70" fill="none" stroke="rgba(248,244,238,.1)" strokeWidth="8"
-            transform="rotate(-90 90 90)"/>
-          {/* fill */}
-            <circle cx="90" cy="90" r="70" fill="none" stroke="url(#ringGrad)" strokeWidth="8"
-            strokeLinecap="butt"
-            className="ring-arc"
-            style={{ '--offset': `calc(439.8 - 439.8 * ${pPct / 100})` }}
-            transform="rotate(-90 90 90)"/>
-          {/* gold tick marks */}
-          <defs>
-            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#B8924A"/>
-              <stop offset="100%" stopColor="#6B8C6B"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <div className="ring-center">
-          <div className="ring-pct">{pPct}%</div>
-          <div className="ring-of">of goal</div>
-        </div>
+    {/* Wellness Bloom (spans rows) */}
+    <div className="card" style={{ '--i': '1', gridColumn: '2', gridRow: '1 / 3', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div className="ring-eyebrow" style={{ alignSelf: 'flex-start', marginBottom: 8 }}>Wellness Bloom</div>
+      <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 320 }}>
+        <WellnessBloom stats={{
+          protein:  pPctMacro,
+          carbs:    cPctMacro,
+          fat:      fPctMacro,
+          avgWater: String(goals.calories > 0 ? ((consumed / goals.calories) * 2).toFixed(1) : '0'),
+        }} />
       </div>
-      <div className="divider"></div>
-      <div style={{ textAlign: 'center' }}>
-        <div className="ring-goal">{goals.calories.toLocaleString()} kcal</div>
-        <div className="ring-goal-label">Daily Goal</div>
+      <div style={{ width: '100%', borderTop: '1px solid var(--ink-10)', paddingTop: 16, display: 'flex', justifyContent: 'space-around' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.6rem', color: 'var(--sage)', letterSpacing: '0.1em' }}>PROTEIN</div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.4rem', fontWeight: 300 }}>{pPctMacro}%</div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.6rem', color: 'var(--rust)', letterSpacing: '0.1em' }}>CARBS</div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.4rem', fontWeight: 300 }}>{cPctMacro}%</div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.6rem', color: 'var(--gold)', letterSpacing: '0.1em' }}>FATS</div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.4rem', fontWeight: 300 }}>{fPctMacro}%</div>
+        </div>
       </div>
     </div>
 
@@ -219,7 +216,7 @@ export default function Home() {
 
     {/* Hydration */}
     <div className="card hydration-card">
-      <div className="card-heading" style={{ marginBottom: '0' }}>
+      <div className="card-heading">
         <div className="card-title">Hydration</div>
         <div className="card-meta" id="waterCount">{log?.waterCups || 0} / 8 cups</div>
       </div>
@@ -242,6 +239,13 @@ export default function Home() {
             : <>✨ &nbsp;<strong>Goal reached!</strong> Beautifully done.</>
           }
         </span>
+      </div>
+
+      <div className="hydration-insight">
+        <div className="insight-label">Wellness Insight</div>
+        <div className="insight-text">
+          Proper hydration improves cognitive function and skin elasticity. Aim for consistent sips throughout the day.
+        </div>
       </div>
     </div>
 
