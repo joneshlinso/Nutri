@@ -71,48 +71,34 @@ export default function Home() {
       <button className="icon-btn" title="Notifications">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
       </button>
-      <Link to="/log" className="cta-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Log Meal
-      </Link>
+
     </div>
   </header>
 
   {/* Row 1: Stats + Ring */}
   <div className="grid-row1">
 
-    {/* Remaining */}
-    <div className="card stat-card remaining" style={{ '--i': '0' }}>
-      <div className="stat-icon-wrap">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    {/* Daily Overview */}
+    <div className="card" style={{ '--i': '0', display: 'flex', justifyContent: 'space-between', padding: '32px 40px', alignItems: 'center' }}>
+      <div style={{ flex: 1, textAlign: 'center', borderRight: '1px solid var(--ink-10)' }}>
+        <div className="stat-eyebrow" style={{ color: 'var(--sage)' }}>Remaining</div>
+        <div className="stat-value">{remaining.toLocaleString()}</div>
+        <div className="stat-unit">kcal today</div>
       </div>
-      <div className="stat-eyebrow">Remaining</div>
-      <div className="stat-value">{remaining.toLocaleString()}</div>
-      <div className="stat-unit">kcal today</div>
-    </div>
-
-    {/* Consumed */}
-    <div className="card stat-card consumed" style={{ '--i': '1' }}>
-      <div className="stat-icon-wrap" style={{ borderColor: 'rgba(74,96,128,.3)', color: 'var(--slate)' }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2z"/><path d="M12 6v6l4 2"/></svg>
+      <div style={{ flex: 1, textAlign: 'center', borderRight: '1px solid var(--ink-10)' }}>
+        <div className="stat-eyebrow" style={{ color: 'var(--slate)' }}>Consumed</div>
+        <div className="stat-value">{consumed.toLocaleString()}</div>
+        <div className="stat-unit">kcal today</div>
       </div>
-      <div className="stat-eyebrow">Consumed</div>
-      <div className="stat-value">{consumed.toLocaleString()}</div>
-      <div className="stat-unit">kcal today</div>
-    </div>
-
-    {/* Burned */}
-    <div className="card stat-card burned" style={{ '--i': '2' }}>
-      <div className="stat-icon-wrap" style={{ borderColor: 'rgba(196,98,58,.3)', color: 'var(--rust)' }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      <div style={{ flex: 1, textAlign: 'center' }}>
+        <div className="stat-eyebrow" style={{ color: 'var(--rust)' }}>Burned</div>
+        <div className="stat-value">280</div>
+        <div className="stat-unit">kcal today</div>
       </div>
-      <div className="stat-eyebrow">Burned</div>
-      <div className="stat-value">280</div>
-      <div className="stat-unit">kcal today</div>
     </div>
 
     {/* Calorie Ring (spans rows) */}
-    <div className="card ring-card" style={{ '--i': '3' }}>
+    <div className="card ring-card" style={{ '--i': '1', gridColumn: '2', gridRow: '1 / 3' }}>
       <div className="ring-eyebrow">Daily Target</div>
       <div className="ring-wrap">
         <svg width="180" height="180" viewBox="0 0 180 180">
@@ -148,8 +134,8 @@ export default function Home() {
       </div>
     </div>
 
-    {/* Progress Card (spans 3 cols) */}
-    <div className="card progress-card" style={{ '--i': '3', gridColumn: '1/4' }}>
+    {/* Progress Card */}
+    <div className="card progress-card" style={{ '--i': '2', gridColumn: '1' }}>
       <div className="card-heading">
         <div>
           <div className="card-title">Macronutrient Progress</div>

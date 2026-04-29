@@ -26,6 +26,10 @@ const dailyLogSchema = new mongoose.Schema(
     waterCups: {
       type: Number,
       default: 0,
+    },
+    weight: {
+      type: Number,
+      required: false,
     }
   },
   { timestamps: true }

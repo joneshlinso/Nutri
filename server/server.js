@@ -21,6 +21,8 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/logs", require("./routes/logRoutes"));
 app.use("/api/goals", require("./routes/goalRoutes"));
+app.use("/api/plans", require("./routes/mealPlanRoutes"));
+app.use("/api/ai", require("./routes/aiRoutes"));
 
 // ─── Health Check ────────────────────────────────────────────
 app.get("/api/health", (req, res) => {

@@ -30,7 +30,7 @@ export default function Login() {
       <motion.div
         initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }}
         transition={{ duration:0.55, ease:[0.34, 1.56, 0.64, 1] }}
-        style={{ width: "100%", maxWidth: 440, background: "#FFFFFF", border: "1px solid rgba(184,146,74,.2)", borderRadius: 2, padding: 48, boxShadow: "0 8px 60px rgba(26,22,18,.05)" }}>
+        style={{ width: "100%", maxWidth: 440, background: "var(--card-bg)", border: "1px solid rgba(184,146,74,.2)", borderRadius: 2, padding: 48, boxShadow: "0 8px 60px rgba(26,22,18,.05)" }}>
 
         {/* Logo */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 40 }}>
@@ -40,7 +40,7 @@ export default function Login() {
           <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "2.4rem", fontWeight: 300, color: "var(--ink)", letterSpacing: "-0.01em", lineHeight: 1, marginBottom: 8 }}>
             {mode === "login" ? "Welcome Back" : "Create Account"}
           </h1>
-          <p style={{ fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-60)" }}>
+          <p style={{ fontSize: "0.75rem", letterSpacing: "0.02em",  color: "var(--ink-60)" }}>
             {mode === "login" ? "Daily Wellness Journal" : "Elevate your health journey."}
           </p>
         </div>
@@ -48,16 +48,16 @@ export default function Login() {
         <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {mode === "signUp" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-60)", fontWeight: 600 }}>Name</label>
+              <label style={{ fontSize: "0.7rem", letterSpacing: "0.02em",  color: "var(--ink-60)", fontWeight: 600 }}>Name</label>
               <input style={{ padding: "14px 16px", background: "var(--cream)", border: "1px solid var(--ink-10)", borderRadius: 2, fontSize: "0.95rem", fontFamily: "'Montserrat', sans-serif", color: "var(--ink)", outline: "none" }} placeholder="Alexandra Chen" required value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} />
             </div>
           )}
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label style={{ fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-60)", fontWeight: 600 }}>Email</label>
+            <label style={{ fontSize: "0.7rem", letterSpacing: "0.02em",  color: "var(--ink-60)", fontWeight: 600 }}>Email</label>
             <input type="email" style={{ padding: "14px 16px", background: "var(--cream)", border: "1px solid var(--ink-10)", borderRadius: 2, fontSize: "0.95rem", fontFamily: "'Montserrat', sans-serif", color: "var(--ink)", outline: "none" }} placeholder="alexandra@nutrire.test" required value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label style={{ fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--ink-60)", fontWeight: 600 }}>Password</label>
+            <label style={{ fontSize: "0.7rem", letterSpacing: "0.02em",  color: "var(--ink-60)", fontWeight: 600 }}>Password</label>
             <div style={{ position:"relative" }}>
               <input type={show?"text":"password"} style={{ width: "100%", padding: "14px 16px", paddingRight: 48, background: "var(--cream)", border: "1px solid var(--ink-10)", borderRadius: 2, fontSize: "0.95rem", fontFamily: "'Montserrat', sans-serif", color: "var(--ink)", outline: "none" }} placeholder="••••••••" required value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))} />
               <button type="button" onClick={()=>setShow(!show)} style={{ position:"absolute", right:14, top:14, background:"none", border:"none", color:"var(--ink-60)", cursor:"pointer" }}>

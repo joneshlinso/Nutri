@@ -27,7 +27,7 @@ export default function AmbientBackground() {
         style={{
           position: "absolute", top: "10%", left: "20%",
           width: "50vw", height: "50vw", borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(0, 230, 118, 0.08) 0%, transparent 70%)",
+          background: "radial-gradient(circle, var(--aura-orb-1) 0%, transparent 70%)",
           filter: "blur(80px)", mixBlendMode: "screen", y: y1
         }}
       />
@@ -42,7 +42,7 @@ export default function AmbientBackground() {
         style={{
           position: "absolute", bottom: "10%", right: "10%",
           width: "60vw", height: "60vw", borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(41, 121, 255, 0.06) 0%, transparent 70%)",
+          background: "radial-gradient(circle, var(--aura-orb-2) 0%, transparent 70%)",
           filter: "blur(100px)", mixBlendMode: "screen", y: y2
         }}
       />

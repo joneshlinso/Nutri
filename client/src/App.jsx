@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Sidebar from "./components/Sidebar";
@@ -14,6 +15,11 @@ function AppLayout() {
   const { user } = useAuth();
   const { pathname } = useLocation();
   const showSidebar = user && pathname !== "/login";
+
+  useEffect(() => {
+    // Ensuring the theme stays locked to the light mode
+    document.documentElement.setAttribute("data-theme", "morning");
+  }, []);
 
   return (
     <div className="app-container">
