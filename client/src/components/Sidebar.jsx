@@ -25,32 +25,48 @@ export default function Sidebar() {
       </div>
 
       {/* ─── Log CTA ─── */}
-      <NavLink to="/log" className="cta-btn" style={{ justifyContent: "center", marginBottom: 32, width: '100%' }}>
-        <Plus size={14} />
+      <NavLink to="/log" style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center", 
+        gap: "8px",
+        marginBottom: 48, 
+        width: '100%', 
+        padding: "12px", 
+        border: "1px solid var(--ink-30)", 
+        borderRadius: "4px", 
+        background: "transparent", 
+        color: "var(--ink)", 
+        textDecoration: "none", 
+        fontSize: "0.85rem", 
+        fontWeight: 500,
+        transition: "var(--transition-slow)" 
+      }} onMouseOver={e => { e.currentTarget.style.background = "var(--ink-10)"; }} onMouseOut={e => { e.currentTarget.style.background = "transparent"; }}>
+        <Plus size={16} strokeWidth={1.25} />
         Log Meal
       </NavLink>
 
       {/* ─── Nav Items ─── */}
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
         {NAV_LINKS.map(({ path, label, icon: Icon }) => (
-          <NavLink key={path} to={path} className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <Icon size={18} />
-            <span>{label}</span>
+          <NavLink key={path} to={path} className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`} style={{ padding: "10px 12px", transition: "var(--transition-slow)" }}>
+            <Icon size={20} strokeWidth={1.25} />
+            <span style={{ fontWeight: 400, letterSpacing: "0.02em" }}>{label}</span>
           </NavLink>
         ))}
       </nav>
 
       {/* ─── Profile ─── */}
-      <div style={{ marginTop: 'auto', paddingTop: 24, borderTop: '1px solid var(--ink-10)' }}>
-        <NavLink to="/profile" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-          <div style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: '0.6rem', fontWeight: 600, color: "var(--cream)" }}>
+      <div style={{ marginTop: 'auto', paddingTop: 32, borderTop: '1px solid var(--ink-10)' }}>
+        <NavLink to="/profile" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`} style={{ marginBottom: 8 }}>
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--ink)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: '0.65rem', fontWeight: 500, color: "var(--cream)", letterSpacing: "0.05em" }}>
             {initials}
           </div>
-          <span style={{ flex: 1 }}>{user.name?.split(" ")[0]}</span>
+          <span style={{ flex: 1, fontWeight: 400, letterSpacing: "0.02em" }}>{user.name?.split(" ")[0]}</span>
         </NavLink>
-        <button onClick={logout} className="nav-item">
-          <LogOut size={18} />
-          <span>Sign Out</span>
+        <button onClick={logout} className="nav-item" style={{ background: "transparent", border: "none", width: "100%", textAlign: "left", cursor: "pointer", color: "var(--ink-60)", transition: "var(--transition-slow)" }} onMouseOver={e => e.currentTarget.style.color = "var(--ink)"} onMouseOut={e => e.currentTarget.style.color = "var(--ink-60)"}>
+          <LogOut size={18} strokeWidth={1.25} />
+          <span style={{ fontWeight: 400, letterSpacing: "0.02em" }}>Sign Out</span>
         </button>
       </div>
     </aside>

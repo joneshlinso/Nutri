@@ -97,28 +97,28 @@ export default function Planner() {
           };
 
           return (
-            <div key={day} style={{ display: "flex", flexDirection: "row", alignItems: "stretch", padding: 24, background: isToday ? "var(--sage-pale)" : "var(--card-bg)", border: isToday ? "1px solid var(--sage)" : "var(--border)", borderRadius: 8, boxShadow: "var(--shadow-card)", gap: 24 }}>
+            <div key={day} style={{ display: "flex", flexDirection: "row", alignItems: "stretch", padding: 32, background: isToday ? "var(--sage-pale)" : "var(--card-bg)", border: isToday ? "1px solid var(--sage)" : "var(--border)", borderRadius: 8, boxShadow: "var(--shadow-card)", gap: 32 }}>
               
               {/* Day Header & Progress */}
-              <div style={{ width: "120px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", borderRight: isToday ? "1px solid var(--sage)" : "1px solid var(--ink-10)", paddingRight: 24 }}>
-                <p style={{ fontSize: "0.85rem", letterSpacing: "0.05em", fontWeight: 600, color: isToday ? "var(--sage)" : "var(--ink-60)", textTransform: "uppercase" }}>{day}</p>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 8 }}>
-                  <p style={{ fontSize: "1.8rem", fontFamily: "'Cormorant Garamond', serif", fontWeight: 500, color: isToday ? "var(--ink)" : "var(--ink-80)" }}>{totalCal}</p>
-                  <p style={{ fontSize: "0.7rem", color: "var(--ink-40)" }}>/ 2400</p>
+              <div style={{ width: "120px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", borderRight: isToday ? "1px solid var(--sage)" : "1px solid var(--ink-10)", paddingRight: 32 }}>
+                <p className="text-micro-caps" style={{ color: isToday ? "var(--sage)" : "var(--ink-50)" }}>{day}</p>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 12 }}>
+                  <p style={{ fontSize: "2.2rem", fontFamily: "'Cormorant Garamond', serif", fontWeight: 400, color: isToday ? "var(--ink)" : "var(--ink-80)", letterSpacing: "-0.02em" }}>{totalCal}</p>
+                  <p style={{ fontSize: "0.75rem", color: "var(--ink-40)" }}>/ 2400</p>
                 </div>
                 {/* Progress Bar */}
-                <div style={{ width: "100%", height: 4, background: "var(--ink-10)", borderRadius: 2, marginTop: 12, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${progress}%`, background: isToday ? "var(--sage)" : "var(--ink-40)", transition: "width 0.3s ease" }} />
+                <div style={{ width: "100%", height: 3, background: "rgba(26,22,18,0.05)", borderRadius: 2, marginTop: 16, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${progress}%`, background: isToday ? "var(--sage)" : "var(--gold-light)", opacity: 0.8, transition: "width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)" }} />
                 </div>
               </div>
 
               {/* Meals Area */}
-              <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
+              <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 24 }}>
                 {["Morning", "Midday", "Evening"].map(timeOfDay => {
                   const typeMeals = groupedMeals[timeOfDay];
                   return (
-                    <div key={timeOfDay} style={{ background: "rgba(0,0,0,0.02)", padding: 16, borderRadius: 6, display: "flex", flexDirection: "column", gap: 12 }}>
-                      <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--ink-50)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{timeOfDay}</div>
+                    <div key={timeOfDay} style={{ background: "rgba(26,22,18,0.015)", padding: 24, borderRadius: 8, display: "flex", flexDirection: "column", gap: 16, border: "1px solid rgba(26,22,18,0.03)" }}>
+                      <div className="text-micro-caps">{timeOfDay}</div>
                       
                       <AnimatePresence>
                         {typeMeals.map(meal => (

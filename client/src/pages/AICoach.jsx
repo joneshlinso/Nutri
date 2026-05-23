@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { CornerDownLeft, Sparkles, ChefHat, Clock, Flame } from "lucide-react";
+import { CornerDownLeft, Sparkles, ChefHat, Clock, Flame, BrainCircuit, Bot, Camera, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../api/axiosInstance";
 
-const QUICK_ACTIONS = ["Analyze today's meal", "Suggest a healthy snack", "Recipe: Quinoa Bowl"];
+const QUICK_ACTIONS = ["Analyze today's meal", "Suggest a healthy snack", "Recipe: Quinoa Bowl", "How much protein do I need?"];
 const INIT_MSGS = [{
   id: 1, from: "ai",
-  text: "Welcome to your NutriAI Coach. I am here to provide elite nutritional guidance and craft couture recipes for your meals. How can I assist you today?",
+  text: "Welcome to your NutriAI Coach — now powered by a curated nutritional knowledge base (RAG). My answers are grounded in USDA and WHO guidelines. How can I assist you today?",
   suggestions: ["Recipe: Salmon & Rice", "Suggest a high-protein breakfast"]
 }];
 
@@ -48,9 +48,29 @@ export default function AICoach() {
   const [msgs, setMsgs] = useState(INIT_MSGS);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
+  const [agentResult, setAgentResult] = useState(null);
+  const [agentLoading, setAgentLoading] = useState(false);
+  const [ragStats, setRagStats] = useState(null);
   const bottomRef = useRef(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, typing]);
+  
+  useEffect(() => {
+    api.get("/ai/rag/stats").then(res => setRagStats(res.data)).catch(() => {});
+  }, []);
+
+  const runAgent = async () => {
+    setAgentLoading(true);
+    setAgentResult(null);
+    try {
+      const res = await api.post("/ai/agent/correct");
+      setAgentResult(res.data);
+    } catch (err) {
+      setAgentResult({ status: "error", message: "Agent could not be reached. Please try again." });
+    } finally {
+      setAgentLoading(false);
+    }
+  };
 
   const send = async (text) => {
     if (!text.trim()) return;
@@ -112,11 +132,61 @@ export default function AICoach() {
         </div>
 
         {/* Quick Actions */}
-        <div style={{ padding: "16px 28px", display: "flex", gap: 12, flexWrap: "wrap", background: "var(--cream-dark)", borderBottom: "1px solid var(--ink-10)" }}>
+        <div style={{ padding: "16px 28px", display: "flex", gap: 12, flexWrap: "wrap", background: "var(--cream-dark)", borderBottom: "1px solid var(--ink-10)", alignItems: "center" }}>
           {QUICK_ACTIONS.map(a => (
-            <button key={a} style={{ background: "var(--card-bg)", border: "1px solid rgba(184,146,74,.2)", padding: "8px 16px", borderRadius: 2, fontSize: "0.75rem", fontFamily: "'Montserrat', sans-serif", color: "var(--ink)", cursor: "pointer", boxShadow: "0 2px 8px rgba(26,22,18,.04)" }} onClick={() => send(a)}>{a}</button>
+            <button key={a} style={{ background: "var(--card-bg)", border: "1px solid var(--border)", padding: "8px 16px", borderRadius: 4, fontSize: "0.75rem", fontFamily: "'Montserrat', sans-serif", color: "var(--ink)", cursor: "pointer", transition: "var(--transition-slow)" }} onClick={() => send(a)}>{a}</button>
           ))}
+          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+            {ragStats && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: ragStats.status === "active" ? "rgba(107,140,107,0.12)" : "rgba(196,98,58,0.1)", borderRadius: 4, border: `1px solid ${ragStats.status === "active" ? "var(--sage)" : "var(--rust)"}` }}>
+                <BrainCircuit size={12} strokeWidth={1.5} style={{ color: ragStats.status === "active" ? "var(--sage)" : "var(--rust)" }} />
+                <span style={{ fontSize: "0.65rem", color: ragStats.status === "active" ? "var(--sage)" : "var(--rust)", fontWeight: 600 }}>RAG · {ragStats.knowledgeDocuments} docs</span>
+              </div>
+            )}
+            <button onClick={runAgent} disabled={agentLoading} style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--ink)", color: "var(--cream)", border: "none", padding: "8px 14px", borderRadius: 4, fontSize: "0.75rem", cursor: "pointer", opacity: agentLoading ? 0.7 : 1, transition: "var(--transition-slow)" }}>
+              <Bot size={14} strokeWidth={1.25} />
+              {agentLoading ? "Analyzing..." : "Run Agent"}
+            </button>
+          </div>
         </div>
+
+        {/* Agent Result Banner */}
+        <AnimatePresence>
+          {agentResult && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+              style={{ borderBottom: "1px solid var(--ink-10)", overflow: "hidden" }}>
+              <div style={{ padding: "20px 28px", background: agentResult.status === "on_track" ? "rgba(107,140,107,0.06)" : "rgba(184,146,74,0.06)", display: "flex", gap: 16, alignItems: "flex-start" }}>
+                <Bot size={20} strokeWidth={1.25} style={{ color: "var(--gold)", flexShrink: 0, marginTop: 2 }} />
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink-50)", marginBottom: 6 }}>Autonomous Macro Agent</p>
+                  <p style={{ fontSize: "0.9rem", color: "var(--ink)", lineHeight: 1.5, marginBottom: agentResult.correctionMeal ? 12 : 0 }}>{agentResult.message}</p>
+                  {agentResult.correctionMeal && (
+                    <div style={{ background: "var(--card-bg)", padding: "12px 16px", borderRadius: 4, border: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem", fontWeight: 500, color: "var(--ink)" }}>{agentResult.correctionMeal.mealName}</p>
+                        <p style={{ fontSize: "0.8rem", color: "var(--ink-60)", marginTop: 2 }}>{agentResult.correctionMeal.description}</p>
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <p style={{ fontSize: "0.65rem", color: "var(--ink-50)", letterSpacing: "0.05em" }}>EST.</p>
+                        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem", color: "var(--ink)" }}>{agentResult.correctionMeal.estimatedCalories} kcal</p>
+                      </div>
+                    </div>
+                  )}
+                  {agentResult.consumed && (
+                    <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
+                      {["calories","protein","carbs","fat"].map(k => (
+                        <span key={k} style={{ fontSize: "0.7rem", color: "var(--ink-60)" }}>
+                          <span style={{ fontWeight: 600, color: "var(--ink)" }}>{agentResult.consumed[k]}g</span> {k}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button onClick={() => setAgentResult(null)} style={{ background: "transparent", border: "none", color: "var(--ink-40)", cursor: "pointer", fontSize: 16 }}>×</button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Chat */}
         <div style={{ flex: 1, overflowY: "auto", padding: "32px 28px", display: "flex", flexDirection: "column", gap: 24, background: "var(--cream)" }}>
@@ -130,13 +200,14 @@ export default function AICoach() {
                   <RecipeCard recipe={msg.recipe} />
                 ) : (
                   <div style={{ 
-                    padding: "16px 20px", borderRadius: 2, maxWidth: "80%", lineHeight: 1.6, fontSize: "0.95rem", fontFamily: "'Montserrat', sans-serif",
+                    padding: "16px 20px", borderRadius: 4, maxWidth: "80%", lineHeight: 1.6, fontSize: "0.95rem", fontFamily: "'Montserrat', sans-serif",
                     background: msg.from === "user" ? "var(--ink)" : "var(--card-bg)", 
                     color: msg.from === "user" ? "var(--cream)" : "var(--ink)",
-                    border: msg.from === "ai" ? "1px solid rgba(184,146,74,.3)" : "none",
+                    border: msg.from === "ai" ? "1px solid var(--border)" : "none",
                     boxShadow: msg.from === "ai" ? "0 4px 16px rgba(26,22,18,.05)" : "none"
                   }}>
                     {msg.text}
+                    {msg.ragUsed && <span style={{ display: "inline-block", marginLeft: 8, fontSize: "0.6rem", background: "rgba(107,140,107,0.12)", color: "var(--sage)", padding: "2px 6px", borderRadius: 3, fontWeight: 600, verticalAlign: "middle" }}>RAG</span>}
                   </div>
                 )}
 

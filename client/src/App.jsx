@@ -10,11 +10,12 @@ import Planner from "./pages/Planner";
 import Progress from "./pages/Progress";
 import AICoach from "./pages/AICoach";
 import Profile from "./pages/Profile";
+import Onboarding from "./pages/Onboarding";
 
 function AppLayout() {
   const { user } = useAuth();
   const { pathname } = useLocation();
-  const showSidebar = user && pathname !== "/login";
+  const showSidebar = user && pathname !== "/login" && pathname !== "/onboarding";
 
   useEffect(() => {
     // Ensuring the theme stays locked to the light mode
@@ -34,6 +35,7 @@ function AppLayout() {
             <Route path="/progress" element={<Progress />} />
             <Route path="/ai"       element={<AICoach />} />
             <Route path="/profile"  element={<Profile />} />
+            <Route path="/onboarding" element={<Onboarding />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

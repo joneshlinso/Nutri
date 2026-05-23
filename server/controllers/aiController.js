@@ -1,8 +1,30 @@
 const { GoogleGenAI } = require('@google/genai');
+const { retrieveRelevantContext } = require('../services/ragService');
+const { runMacroCorrectionAgent } = require('../services/agentService');
+const { seedKnowledgeDocument, getKnowledgeCount } = require('../services/ragService');
 
 // Initialize Gemini Client
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
 const modelName = process.env.GOOGLE_MODEL || 'gemini-2.5-flash-lite';
+const fallbackModel = 'gemini-2.0-flash-lite'; // fallback if primary is overloaded
+
+// ─── Retry helper with exponential backoff ────────────────────────────────
+async function withRetry(fn, maxRetries = 3, initialDelay = 1000) {
+  let lastError;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      const isRetryable = err.status === 503 || err.status === 429 || err.message?.includes('UNAVAILABLE') || err.message?.includes('RESOURCE_EXHAUSTED');
+      if (!isRetryable || attempt === maxRetries - 1) throw err;
+      const delay = initialDelay * Math.pow(2, attempt);
+      console.warn(`AI API retry ${attempt + 1}/${maxRetries} after ${delay}ms — ${err.message?.slice(0, 60)}`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw lastError;
+}
 
 // @desc    Chat with NutriAI Coach
 // @route   POST /api/ai/chat
@@ -15,22 +37,46 @@ const chatWithAI = async (req, res) => {
       return res.status(400).json({ message: "Message is required" });
     }
 
+    // ── RAG: Retrieve relevant nutritional knowledge ──────────────────────
+    let ragContext = "";
+    try {
+      ragContext = await retrieveRelevantContext(message);
+    } catch (ragErr) {
+      console.warn("RAG retrieval skipped:", ragErr.message);
+    }
+
     const systemPrompt = `You are a high-end, luxury nutritionist and wellness coach named 'NutriAI'. 
     Your tone is encouraging, highly professional, slightly elegant, and concise. 
     You provide practical, science-backed nutritional advice. 
     Keep responses relatively short (2-3 sentences) unless asked for details.
+    
+    RETRIEVED NUTRITIONAL KNOWLEDGE (use this to ground your response in facts):
+    ${ragContext || "No specific knowledge retrieved — use your general expertise."}
+    
     Context about the user's current state: ${context || "None provided."}`;
 
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: message,
-      config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.7,
+    const response = await withRetry(async () => {
+      try {
+        return await ai.models.generateContent({
+          model: modelName,
+          contents: message,
+          config: { systemInstruction: systemPrompt, temperature: 0.7 }
+        });
+      } catch (err) {
+        // If primary model overloaded, try fallback immediately
+        if (err.status === 503 || err.message?.includes('UNAVAILABLE')) {
+          console.warn(`Primary model unavailable, switching to fallback: ${fallbackModel}`);
+          return await ai.models.generateContent({
+            model: fallbackModel,
+            contents: message,
+            config: { systemInstruction: systemPrompt, temperature: 0.7 }
+          });
+        }
+        throw err;
       }
     });
 
-    res.json({ text: response.text });
+    res.json({ text: response.text, ragUsed: ragContext.length > 0 });
   } catch (error) {
     console.error("AI Chat Error:", error);
     res.status(500).json({ message: "Failed to communicate with AI Coach" });
@@ -176,4 +222,29 @@ const generateGroceryList = async (req, res) => {
   }
 };
 
-module.exports = { chatWithAI, generateCoutureRecipe, analyzeMealImage, generateGroceryList };
+// @desc    Run the autonomous macro-correction agent
+// @route   POST /api/ai/agent/correct
+// @access  Private
+const runCorrectionAgent = async (req, res) => {
+  try {
+    const result = await runMacroCorrectionAgent(req.user._id);
+    res.json(result);
+  } catch (error) {
+    console.error("Agent Error:", error);
+    res.status(500).json({ message: "Agent failed to analyze your day" });
+  }
+};
+
+// @desc    Get RAG knowledge base stats
+// @route   GET /api/ai/rag/stats
+// @access  Private
+const getRagStats = async (req, res) => {
+  try {
+    const count = await getKnowledgeCount();
+    res.json({ knowledgeDocuments: count, status: count > 0 ? "active" : "empty" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch RAG stats" });
+  }
+};
+
+module.exports = { chatWithAI, generateCoutureRecipe, analyzeMealImage, generateGroceryList, runCorrectionAgent, getRagStats };

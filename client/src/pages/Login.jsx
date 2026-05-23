@@ -15,10 +15,13 @@ export default function Login() {
   const submit = async (e) => {
     e.preventDefault(); setError("");
     try {
-      mode === "login"
-        ? await login(form.email, form.password)
-        : await register(form.name, form.email, form.password);
-      navigate("/");
+      if (mode === "login") {
+        await login(form.email, form.password);
+        navigate("/");
+      } else {
+        await register(form.name, form.email, form.password);
+        navigate("/onboarding");
+      }
     } catch (err) {
       console.error("Authentication action failed:", err);
       setError(err.response?.data?.message || err.message || "Authentication failed. Check credentials.");
