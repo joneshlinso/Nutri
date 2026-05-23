@@ -20,7 +20,8 @@ export default function Login() {
         : await register(form.name, form.email, form.password);
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Authentication failed. Check credentials.");
+      console.error("Authentication action failed:", err);
+      setError(err.response?.data?.message || err.message || "Authentication failed. Check credentials.");
     }
   };
 

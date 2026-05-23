@@ -1,22 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { User, Target, Utensils, Bell, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import api from "../api/axiosInstance";
 
 const GOALS = ["Lose Weight","Gain Muscle","Maintenance","Better Health"];
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user, setUser, logout } = useAuth();
   const [section, setSection] = useState("profile");
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
-    name:     user?.name  || "Alexandra Chen",
-    email:    user?.email || "alexandra@nutrire.test",
-    goal:"Lose Weight", calories:"1850", protein:"145",
+    name:     user?.name  || "",
+    email:    user?.email || "",
+    goal: "Maintenance", calories: "2000", protein: "150", carbs: "250", fat: "70"
   });
+
+  useEffect(() => {
+    const fetchGoals = async () => {
+      try {
+        const res = await api.get('/goals');
+        if (res.data) {
+          setForm(f => ({
+            ...f,
+            goal: res.data.goal || "Maintenance",
+            calories: res.data.calories || "2000",
+            protein: res.data.protein || "150",
+            carbs: res.data.carbs || "250",
+            fat: res.data.fat || "70"
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch goals", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchGoals();
+  }, []);
+
   const set = k => e => setForm(f => ({...f,[k]:e.target.value}));
-  const save = () => { setSaved(true); setTimeout(()=>setSaved(false),2000); };
-  const initials = form.name.split(" ").map(n=>n[0]).join("").toUpperCase().slice(0,2)||"A";
+  
+  const save = async () => { 
+    try {
+      if (user && user._id) {
+        // Save user profile details (name, email)
+        const userRes = await api.put(`/users/${user._id}`, { name: form.name, email: form.email });
+        setUser({ ...user, name: userRes.data.name, email: userRes.data.email });
+      }
+      
+      // Save user goals
+      await api.put('/goals', {
+        goal: form.goal,
+        calories: Number(form.calories),
+        protein: Number(form.protein),
+        carbs: Number(form.carbs),
+        fat: Number(form.fat)
+      });
+      
+      setSaved(true); 
+      setTimeout(()=>setSaved(false), 2000); 
+    } catch (err) {
+      console.error("Failed to save profile", err);
+    }
+  };
+  
+  const initials = form.name.split(" ").map(n=>n[0]).join("").toUpperCase().slice(0,2)||"U";
 
   const SECTIONS = [
     { id:"profile", icon:User,     label:"Profile" },
@@ -24,6 +74,8 @@ export default function Profile() {
     { id:"diet",    icon:Utensils, label:"Diet Prefs" },
     { id:"notifs",  icon:Bell,     label:"Notifications" },
   ];
+
+  if (loading) return <div className="page-content">Loading profile...</div>;
 
   return (
     <main className="page-content">
@@ -33,7 +85,6 @@ export default function Profile() {
           <p>Manage your account and nutrition goals.</p>
         </div>
       </div>
-
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 24, alignItems: "start" }}>
         

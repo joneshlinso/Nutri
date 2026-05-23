@@ -25,15 +25,15 @@ const getUserGoal = async (req, res) => {
 const updateUserGoal = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { calories, protein, carbs, fat } = req.body;
+    const { goal, calories, protein, carbs, fat } = req.body;
 
-    const goal = await UserGoal.findOneAndUpdate(
+    const updatedGoal = await UserGoal.findOneAndUpdate(
       { user: userId },
-      { calories, protein, carbs, fat },
+      { goal, calories, protein, carbs, fat },
       { new: true, upsert: true, runValidators: true }
     );
 
-    res.json(goal);
+    res.json(updatedGoal);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

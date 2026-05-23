@@ -11,7 +11,30 @@ connectDB();
 const app = express();
 
 // ─── Middleware ──────────────────────────────────────────────
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+// ─── CORS Configuration ──────────────────────────────────────
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    
+    const normalizedOrigin = origin.replace(/\/$/, "");
+    const isAllowed = allowedOrigins.some(allowed => allowed.replace(/\/$/, "") === normalizedOrigin)
+      || normalizedOrigin.startsWith("http://localhost:")
+      || normalizedOrigin.startsWith("http://127.0.0.1:");
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
@@ -44,7 +67,7 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start Server ────────────────────────────────────────────
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

@@ -4,8 +4,8 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
-    --cream: #F8F4EE;
-    --cream-dark: #EDE7DC;
+    --cream: #e9e2d9;
+    --cream-dark: #efdecf;
     --ink: #1A1612;
     --ink-60: rgba(26,22,18,.6);
     --ink-30: rgba(26,22,18,.3);

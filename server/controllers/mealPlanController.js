@@ -1,4 +1,9 @@
 const MealPlan = require("../models/MealPlan");
+const UserGoal = require("../models/UserGoal");
+const { GoogleGenAI } = require('@google/genai');
+
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
+const modelName = process.env.GOOGLE_MODEL || 'gemini-2.5-flash-lite';
 
 // @desc    Get user's weekly meal plan
 // @route   GET /api/plans
@@ -50,16 +55,44 @@ const generateMealPlan = async (req, res) => {
   try {
     const userId = req.user.id;
     
-    // Mock generation logic - in a real app, this could call an LLM or use an algorithm
-    const generatedPlan = {
-      "Mon":[{id:1,type:"Morning",name:"Egg Scramble",cal:350,emoji:"🍳"},{id:2,type:"Midday",name:"Quinoa Bowl",cal:500,emoji:"🥗"},{id:3,type:"Evening",name:"Steak & Potato",cal:650,emoji:"🥩"}],
-      "Tue":[{id:4,type:"Morning",name:"Smoothie",cal:280,emoji:"🥤"},{id:5,type:"Midday",name:"Turkey Wrap",cal:420,emoji:"🌯"},{id:6,type:"Evening",name:"Baked Cod",cal:400,emoji:"🐟"}],
-      "Wed":[{id:7,type:"Morning",name:"Greek Yogurt",cal:250,emoji:"🫙"},{id:8,type:"Midday",name:"Tuna Salad",cal:380,emoji:"🥗"},{id:9,type:"Evening",name:"Stir-fry",cal:550,emoji:"🥢"}],
-      "Thu":[{id:10,type:"Morning",name:"Avocado Toast",cal:320,emoji:"🥑"},{id:11,type:"Midday",name:"Lentil Soup",cal:350,emoji:"🍲"},{id:12,type:"Evening",name:"Pork Chop",cal:600,emoji:"🍖"}],
-      "Fri":[{id:13,type:"Morning",name:"Oatmeal",cal:300,emoji:"🥣"},{id:14,type:"Midday",name:"Caesar Salad",cal:450,emoji:"🥗"},{id:15,type:"Evening",name:"Pizza",cal:700,emoji:"🍕"}],
-      "Sat":[{id:16,type:"Morning",name:"Pancakes",cal:500,emoji:"🥞"},{id:17,type:"Midday",name:"Burger",cal:650,emoji:"🍔"},{id:18,type:"Evening",name:"Pasta",cal:580,emoji:"🍝"}],
-      "Sun":[{id:19,type:"Morning",name:"Bacon & Eggs",cal:450,emoji:"🍳"},{id:20,type:"Midday",name:"Sandwich",cal:400,emoji:"🥪"},{id:21,type:"Evening",name:"Roast Chicken",cal:600,emoji:"🍗"}],
-    };
+    // Fetch user goals
+    const goal = await UserGoal.findOne({ user: userId });
+    const calories = goal ? goal.calories : 2000;
+    const protein = goal ? goal.protein : 150;
+    const carbs = goal ? goal.carbs : 250;
+    const fat = goal ? goal.fat : 70;
+    const primaryGoal = goal ? goal.goal : "Maintenance";
+
+    const prompt = `Act as an elite luxury nutritionist. Create a 7-day personalized meal plan (Mon-Sun).
+    The user's primary goal is "${primaryGoal}", targeting around ${calories} kcal, ${protein}g protein, ${carbs}g carbs, and ${fat}g fat per day.
+    
+    Format the response strictly as a JSON object where keys are the days of the week ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun").
+    Each day should contain an array of exactly 3 meals (Morning, Midday, Evening).
+    Each meal object must have these exact properties:
+    {
+      "id": a unique integer number (e.g., from 1 to 21),
+      "type": "Morning", "Midday", or "Evening",
+      "name": "Elegant meal name",
+      "cal": number (estimated calories),
+      "emoji": "emoji representing the food"
+    }
+    
+    Ensure the JSON is valid.`;
+
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: prompt,
+      config: {
+        temperature: 0.8,
+        responseMimeType: "application/json",
+      }
+    });
+
+    let cleanText = response.text.trim();
+    if (cleanText.startsWith("```")) {
+      cleanText = cleanText.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+    }
+    const generatedPlan = JSON.parse(cleanText);
 
     const weekStartDate = new Date().toISOString().split("T")[0];
 
@@ -71,6 +104,7 @@ const generateMealPlan = async (req, res) => {
 
     res.json(mealPlan);
   } catch (error) {
+    console.error("Meal Generation Error:", error);
     res.status(500).json({ message: error.message });
   }
 };

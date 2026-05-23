@@ -8,6 +8,10 @@ const userGoalSchema = new mongoose.Schema(
       required: true,
       unique: true, // Each user has one set of goals
     },
+    goal: {
+      type: String,
+      default: "Maintenance",
+    },
     calories: {
       type: Number,
       default: 2000,
