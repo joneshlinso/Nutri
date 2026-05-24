@@ -1,16 +1,23 @@
 import { useState, useEffect } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../api/axiosInstance";
 
 const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+const PLANNER_EMOJIS = {
+  Morning: "🍳",
+  Midday: "🥗",
+  Evening: "🍲",
+  Snack: "🍎"
+};
 
 export default function Planner() {
   const [plan, setPlan] = useState({});
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [activeDay, setActiveDay] = useState(null); // For modal
-  const [newMeal, setNewMeal] = useState({ name: "", type: "Morning", cal: "", emoji: "🍲" });
+  const [newMeal, setNewMeal] = useState({ name: "", type: "Morning", cal: "", emoji: PLANNER_EMOJIS.Morning });
 
   useEffect(() => {
     api.get("/plans").then(res => {
@@ -55,13 +62,13 @@ export default function Planner() {
       type: newMeal.type,
       name: newMeal.name,
       cal: Number(newMeal.cal),
-      emoji: newMeal.emoji || "🍲"
+      emoji: PLANNER_EMOJIS[newMeal.type] || "🍲"
     };
     
     const newPlan = { ...plan, [activeDay]: [...dayPlan, meal] };
     save(newPlan);
     setActiveDay(null);
-    setNewMeal({ name: "", type: "Morning", cal: "", emoji: "🍲" });
+    setNewMeal({ name: "", type: "Morning", cal: "", emoji: PLANNER_EMOJIS.Morning });
   };
 
   const remove = (day, mealId) => {
@@ -75,11 +82,64 @@ export default function Planner() {
 
   return (
     <main className="page-content">
-      <div className="page-header">
+      <div className="page-header" style={{ alignItems: "center" }}>
         <div>
           <h1>Weekly Planner</h1>
-          <p>Organize your meals. <button className="inline-action" onClick={autofill} disabled={generating} style={{ opacity: generating ? 0.5 : 1 }}>{generating ? "Generating..." : "Auto-fill with AI"}</button></p>
+          <p>Organize your meals dynamically.</p>
         </div>
+        <button 
+          onClick={autofill} 
+          disabled={generating} 
+          style={{
+            padding: "12px 24px",
+            background: "linear-gradient(135deg, var(--ink) 0%, #2A241F 100%)",
+            color: "var(--gold)",
+            border: "1px solid rgba(184,146,74,0.4)",
+            borderRadius: 2,
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            boxShadow: "0 4px 15px rgba(184,146,74,0.08)",
+            transition: "all 0.3s ease",
+            opacity: generating ? 0.6 : 1,
+            fontFamily: "'Montserrat', sans-serif"
+          }}
+          onMouseOver={e => {
+            if (!generating) {
+              e.currentTarget.style.background = "var(--gold)";
+              e.currentTarget.style.color = "var(--cream)";
+              e.currentTarget.style.borderColor = "var(--gold)";
+              e.currentTarget.style.boxShadow = "0 6px 20px rgba(184,146,74,0.25)";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }
+          }}
+          onMouseOut={e => {
+            if (!generating) {
+              e.currentTarget.style.background = "linear-gradient(135deg, var(--ink) 0%, #2A241F 100%)";
+              e.currentTarget.style.color = "var(--gold)";
+              e.currentTarget.style.borderColor = "rgba(184,146,74,0.4)";
+              e.currentTarget.style.boxShadow = "0 4px 15px rgba(184,146,74,0.08)";
+              e.currentTarget.style.transform = "none";
+            }
+          }}
+        >
+          {generating ? (
+            <>
+              <span className="spin" style={{ display: "inline-block" }}>✨</span>
+              Generating...
+            </>
+          ) : (
+            <>
+              <Sparkles size={13} style={{ color: "var(--gold)" }} />
+              Auto-fill with AI
+            </>
+          )}
+        </button>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -124,7 +184,7 @@ export default function Planner() {
                         {typeMeals.map(meal => (
                           <motion.div key={meal.id} initial={{opacity:0, x: -10}} animate={{opacity:1, x: 0}} exit={{opacity:0, scale:0.9}} transition={{duration:0.3}}
                             style={{ position: "relative", display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "var(--card-bg)", borderRadius: 6, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                            <div style={{ fontSize: "1.2rem" }}>{meal.emoji}</div>
+                            <div style={{ fontSize: "1.2rem" }}>{PLANNER_EMOJIS[meal.type] || meal.emoji || "🍲"}</div>
                             <div style={{ flex: 1 }}>
                               <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--ink)", lineHeight: 1.2, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                                 {meal.name}
@@ -163,15 +223,9 @@ export default function Planner() {
                 <label style={{ fontSize: "0.7rem", letterSpacing: "0.02em", color: "var(--ink-60)", fontWeight: 600, display: "block", marginBottom: 6 }}>Meal Name</label>
                 <input required style={{ width: "100%", padding: "12px", background: "var(--cream)", border: "1px solid var(--ink-10)", borderRadius: 2, outline: "none" }} value={newMeal.name} onChange={e => setNewMeal({...newMeal, name: e.target.value})} placeholder="e.g. Avocado Toast" />
               </div>
-              <div style={{ display: "flex", gap: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: "0.7rem", letterSpacing: "0.02em", color: "var(--ink-60)", fontWeight: 600, display: "block", marginBottom: 6 }}>Calories</label>
-                  <input required type="number" style={{ width: "100%", padding: "12px", background: "var(--cream)", border: "1px solid var(--ink-10)", borderRadius: 2, outline: "none" }} value={newMeal.cal} onChange={e => setNewMeal({...newMeal, cal: e.target.value})} />
-                </div>
-                <div style={{ width: 80 }}>
-                  <label style={{ fontSize: "0.7rem", letterSpacing: "0.02em", color: "var(--ink-60)", fontWeight: 600, display: "block", marginBottom: 6 }}>Emoji</label>
-                  <input style={{ width: "100%", padding: "12px", background: "var(--cream)", border: "1px solid var(--ink-10)", borderRadius: 2, outline: "none", textAlign: "center" }} value={newMeal.emoji} onChange={e => setNewMeal({...newMeal, emoji: e.target.value})} />
-                </div>
+              <div>
+                <label style={{ fontSize: "0.7rem", letterSpacing: "0.02em", color: "var(--ink-60)", fontWeight: 600, display: "block", marginBottom: 6 }}>Calories</label>
+                <input required type="number" style={{ width: "100%", padding: "12px", background: "var(--cream)", border: "1px solid var(--ink-10)", borderRadius: 2, outline: "none" }} value={newMeal.cal} onChange={e => setNewMeal({...newMeal, cal: e.target.value})} />
               </div>
               <div>
                 <label style={{ fontSize: "0.7rem", letterSpacing: "0.02em", color: "var(--ink-60)", fontWeight: 600, display: "block", marginBottom: 6 }}>Type</label>

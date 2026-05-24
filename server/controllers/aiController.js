@@ -1,12 +1,7 @@
-const { GoogleGenAI } = require('@google/genai');
+const { ai, generateContentWithFallback } = require('../services/geminiService');
 const { retrieveRelevantContext } = require('../services/ragService');
 const { runMacroCorrectionAgent } = require('../services/agentService');
 const { seedKnowledgeDocument, getKnowledgeCount } = require('../services/ragService');
-
-// Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
-const modelName = process.env.GOOGLE_MODEL || 'gemini-2.5-flash-lite';
-const fallbackModel = 'gemini-2.0-flash-lite'; // fallback if primary is overloaded
 
 // ─── Retry helper with exponential backoff ────────────────────────────────
 async function withRetry(fn, maxRetries = 3, initialDelay = 1000) {
@@ -55,25 +50,9 @@ const chatWithAI = async (req, res) => {
     
     Context about the user's current state: ${context || "None provided."}`;
 
-    const response = await withRetry(async () => {
-      try {
-        return await ai.models.generateContent({
-          model: modelName,
-          contents: message,
-          config: { systemInstruction: systemPrompt, temperature: 0.7 }
-        });
-      } catch (err) {
-        // If primary model overloaded, try fallback immediately
-        if (err.status === 503 || err.message?.includes('UNAVAILABLE')) {
-          console.warn(`Primary model unavailable, switching to fallback: ${fallbackModel}`);
-          return await ai.models.generateContent({
-            model: fallbackModel,
-            contents: message,
-            config: { systemInstruction: systemPrompt, temperature: 0.7 }
-          });
-        }
-        throw err;
-      }
+    const response = await generateContentWithFallback(message, {
+      systemInstruction: systemPrompt,
+      temperature: 0.7
     });
 
     res.json({ text: response.text, ragUsed: ragContext.length > 0 });
@@ -109,13 +88,9 @@ const generateCoutureRecipe = async (req, res) => {
     
     Ensure the JSON is valid and contains no markdown formatting outside the JSON itself.`;
 
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: prompt,
-      config: {
-        temperature: 0.8,
-        responseMimeType: "application/json",
-      }
+    const response = await generateContentWithFallback(prompt, {
+      temperature: 0.8,
+      responseMimeType: "application/json",
     });
 
     // The SDK with responseMimeType="application/json" returns the JSON string.
@@ -149,25 +124,26 @@ const analyzeMealImage = async (req, res) => {
       "fat": number
     }`;
 
-    // Remove the data:image/jpeg;base64, prefix if present
+    // Extract actual mimeType from the Base64 prefix (e.g. image/jpeg, image/png)
+    const mimeTypeMatch = imageBase64.match(/^data:(image\/\w+);base64,/);
+    const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : "image/jpeg";
     const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
 
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: [
+    const response = await generateContentWithFallback(
+      [
         {
           inlineData: {
             data: base64Data,
-            mimeType: "image/jpeg"
+            mimeType: mimeType
           }
         },
         prompt
       ],
-      config: {
+      {
         temperature: 0.2,
         responseMimeType: "application/json",
       }
-    });
+    );
 
     const mealData = JSON.parse(response.text);
     res.json(mealData);
@@ -204,13 +180,9 @@ const generateGroceryList = async (req, res) => {
       ]
     }`;
 
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: prompt,
-      config: {
-        temperature: 0.5,
-        responseMimeType: "application/json",
-      }
+    const response = await generateContentWithFallback(prompt, {
+      temperature: 0.5,
+      responseMimeType: "application/json",
     });
 
     const groceryData = JSON.parse(response.text);

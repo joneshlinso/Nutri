@@ -9,12 +9,9 @@
  *   - suggest_correction_meal: generates a corrective meal suggestion
  */
 
-const { GoogleGenAI } = require("@google/genai");
+const { generateContentWithFallback } = require("./geminiService");
 const DailyLog = require("../models/DailyLog");
 const UserGoal = require("../models/UserGoal");
-
-const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
-const modelName = process.env.GOOGLE_MODEL || "gemini-2.5-flash-lite";
 
 /**
  * Analyzes the user's day and produces a correction plan if they are off-track.
@@ -96,10 +93,9 @@ Return ONLY a valid JSON object:
   "agentMessage": "A short, encouraging explanation of why this meal was chosen (1-2 sentences, professional tone)"
 }`;
 
-  const response = await ai.models.generateContent({
-    model: modelName,
-    contents: agentPrompt,
-    config: { temperature: 0.5, responseMimeType: "application/json" },
+  const response = await generateContentWithFallback(agentPrompt, {
+    temperature: 0.5,
+    responseMimeType: "application/json"
   });
 
   const correctionMeal = JSON.parse(response.text);

@@ -9,6 +9,7 @@ import WellnessBloom from '../components/WellnessBloom';
 export default function Home() {
   const { user } = useAuth();
   const [log, setLog] = useState(null);
+  const [progress, setProgress] = useState(null);
   const [goals, setGoals] = useState({ calories: 2000, protein: 150, carbs: 250, fat: 70 });
   const [greeting, setGreeting] = useState("Good morning");
   const [loading, setLoading] = useState(true);
@@ -20,12 +21,14 @@ export default function Home() {
 
     const fetchData = async () => {
       try {
-        const [logRes, goalsRes] = await Promise.all([
+        const [logRes, goalsRes, progressRes] = await Promise.all([
           api.get('/logs/day'),
-          api.get('/goals')
+          api.get('/goals'),
+          api.get('/logs/progress')
         ]);
         setLog(logRes.data);
         setGoals(goalsRes.data);
+        setProgress(progressRes.data);
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
       } finally {
@@ -55,6 +58,23 @@ export default function Home() {
   const pPctMacro = Math.min(100, Math.round((totalP / goals.protein) * 100)) || 0;
   const cPctMacro = Math.min(100, Math.round((totalC / goals.carbs) * 100)) || 0;
   const fPctMacro = Math.min(100, Math.round((totalF / goals.fat) * 100)) || 0;
+
+  // Calculate dynamic snapshot stats
+  let daysLogged = 0;
+  let avgCal = 0;
+  let wellnessScore = 0;
+  let weightLost = "--";
+
+  if (progress) {
+    daysLogged = progress.calorieData.length;
+    const totalCal = progress.calorieData.reduce((sum, d) => sum + d.eaten, 0);
+    avgCal = daysLogged > 0 ? Math.round(totalCal / daysLogged) : 0;
+    weightLost = progress.stats.weightLost;
+    
+    // Wellness Score = How many days were under or near calorie goal (adherence)
+    let goodDays = progress.calorieData.filter(d => d.eaten > 0 && d.eaten <= d.goal + 100).length;
+    wellnessScore = daysLogged > 0 ? Math.round((goodDays / daysLogged) * 100) : 0;
+  }
 
   if (loading) return <div className="shell" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', color: 'var(--ink-60)' }}>Curating your wellness journal...</div>;
 
@@ -261,19 +281,19 @@ export default function Home() {
   {/* Row 3: Accent stats */}
   <div className="grid-row3">
     <div className="card accent-card" style={{ '--i': '0' }}>
-      <div className="accent-val">6</div>
-      <div className="accent-label">Day Streak</div>
+      <div className="accent-val">{daysLogged}</div>
+      <div className="accent-label">Days Logged (30d)</div>
     </div>
     <div className="card accent-card" style={{ '--i': '1' }}>
-      <div className="accent-val">12,340</div>
-      <div className="accent-label">Steps Today</div>
+      <div className="accent-val">{weightLost}</div>
+      <div className="accent-label">Weight Lost</div>
     </div>
     <div className="card accent-card" style={{ '--i': '2' }}>
-      <div className="accent-val">7.4h</div>
-      <div className="accent-label">Sleep Last Night</div>
+      <div className="accent-val">{avgCal.toLocaleString()}</div>
+      <div className="accent-label">Avg Kcal (30d)</div>
     </div>
     <div className="card accent-card" style={{ '--i': '3', borderTopColor: 'var(--sage)' }}>
-      <div className="accent-val">92</div>
+      <div className="accent-val">{wellnessScore}</div>
       <div className="accent-label">Wellness Score</div>
     </div>
   </div>

@@ -127,7 +127,6 @@ export default function AICoach() {
           </div>
           <div>
             <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.8rem", fontWeight: 400, color: "var(--ink)", lineHeight: 1.1 }}>NutriAI Coach</h2>
-            <p style={{ fontSize: "0.7rem", letterSpacing: "0.02em",  color: "var(--ink-60)", marginTop: 4 }}>Powered by Gemini 2.5 Flash</p>
           </div>
         </div>
 
